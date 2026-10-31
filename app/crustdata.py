@@ -36,10 +36,11 @@ JOB_FIELDS = [
     "company.basic_info.crustdata_company_id", "company.basic_info.name",
     "location.country", "location.city", "metadata.date_added",
 ]
+# No `experience` group: it costs 0.2/result extra and discovery only needs the title, the email flag and the URL.
 PERSON_FIELDS = [
     "crustdata_person_id", "basic_profile.name", "basic_profile.headline", "basic_profile.current_title",
     "basic_profile.location", "contact.has_business_email",
-    "social_handles.professional_network_identifier.profile_url", "experience.employment_details.current",
+    "social_handles.professional_network_identifier.profile_url",
 ]
 ENRICH_FIELDS = [
     "crustdata_person_id", "basic_profile.name", "basic_profile.current_title", "contact.business_emails",
@@ -49,7 +50,7 @@ ENRICH_FIELDS = [
 # Per-result estimates, used only when the X-Credits-Used header is missing.
 EST_COMPANY = 0.33   # base 0.03 + headcount 0.2 + taxonomy 0.1
 EST_JOB = 0.03
-EST_PERSON = 0.23    # base + experience group
+EST_PERSON = 0.13    # base plus the filter-side experience charge (measured 0.13 per result)
 EST_ENRICH = 2.0     # base 1 + business email 1
 
 

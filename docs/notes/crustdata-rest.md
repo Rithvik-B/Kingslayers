@@ -181,3 +181,29 @@ Response is a **top-level array**, one entry per submitted URL:
 | **Total** | | **≈113**, under `CREDIT_CEILING_PER_RUN=150` |
 
 With `DISCOVERY_COMPANY_LIMIT=5` (15 companies searched) a run costs about 30 credits.
+
+## Lessons from the live runs (2026-10-31, Dinesh)
+
+- **Ranked search ignores negation and is pulled by function words.** Any `nl_query` mentioning hiring,
+  recruiting or talent acquisition returned staffing agencies (Zyoin, PeopleLogic, TeamLease...), and "not
+  staffing agencies" in the query changed nothing. What worked: describe the target companies' own business
+  (IT services firms, BPO operators, retail chains, banks, manufacturers...) and add a hard filter
+  `taxonomy.professional_network_industry not_in ["Staffing and Recruiting", "Human Resources Services",
+  "Human Resources", "Outsourcing and Offshoring Consulting", "Business Consulting and Services"]`. The ICP
+  prompt now does both; the exclusion is a MANDATORY `industry` constraint with operator `not_in`.
+- **Recruiter-titled job postings are mostly at agencies.** For employers, the hiring-volume signal is the
+  count of ordinary postings (Engineer, Developer, Analyst, Executive, Sales...). 0 of 15 employers matched
+  recruiter keywords; 8 of 15 matched the volume keywords.
+- **Business-email status is `unknown` for most people at mid-size Indian companies.** 5 of 5 enriched
+  contacts were `unknown` in one run. Filtering `person_search` on
+  `experience.employment_details.current.business_email_verified = true` fixes it: those people come back
+  `deliverable` from `/person/enrich`. Discovery searches with that flag first, then without it.
+- **`person_search` costs 0.23 per result with the default groups** because `experience` is returned
+  unless `fields` excludes it. With only `basic_profile`, `contact.has_business_email` and the profile URL it
+  is about 0.13 per result (the filter on experience fields still bills its group).
+- **Companies return `locations.country` as ISO alpha-3 (`IND`)** although the filter takes `India`.
+- **Rate limits:** 30 rpm on search endpoints, so discovery runs one batched `/job/search` with
+  `company.basic_info.company_id in [...]` and only falls back to per-company calls when `total_count`
+  exceeds the window.
+- **Cost of one discovery run** with the current field lists: limit 5 (15 companies) ≈ 22 credits in 30 s;
+  limit 20 (60 companies) ≈ 90 credits, with `/person/enrich` (15 rpm) the slowest step.
