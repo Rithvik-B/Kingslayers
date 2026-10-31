@@ -230,7 +230,13 @@ async function loadCampaignList() {
   if (campaignId) sel.value = campaignId;
 }
 $('campaignSelect').onchange = (e) => { campaignId = e.target.value; localStorage.setItem('campaignId', campaignId); openDraftContact = null; $('draft').classList.add('hidden'); refresh(); };
-$('newBtn').onclick = () => { campaignId = null; localStorage.removeItem('campaignId'); campaign = null; companiesData = null; render(); };
+const DEMO_PRODUCT = 'TalentFlow: an AI tool that screens applicants and coordinates recruitment pipelines for medium and large employers in India (200+ employees). Helps talent-acquisition teams cut time-to-hire when hiring volume spikes.';
+$('newBtn').onclick = () => {
+  campaignId = null; localStorage.removeItem('campaignId'); campaign = null; companiesData = null;
+  if (!$('productText').value.trim()) $('productText').value = DEMO_PRODUCT;
+  if (!$('campaignName').value.trim()) $('campaignName').value = 'TalentFlow · India outbound';
+  $('main').classList.add('hidden'); $('draft').classList.add('hidden'); render();
+};
 
 $('createBtn').onclick = async () => {
   try {
@@ -290,7 +296,7 @@ function render() {
   const inSetup = !c || ['DRAFT', 'FAILED'].includes(c.status) || (c.status === 'DISCOVERING' && !(c.funnel && c.funnel.discovered));
   $('setup').classList.toggle('hidden', !inSetup);
   $('main').classList.toggle('hidden', inSetup);
-  if (!c) { $('icpBlock').classList.add('hidden'); $('discoverBlock').classList.add('hidden'); $('title').textContent = 'Kingslayers · Sales Agent'; $('s1n').className = 'stepn cur'; return; }
+  if (!c) { $('icpBlock').classList.add('hidden'); $('discoverBlock').classList.add('hidden'); $('title').textContent = 'Kingslayers · Sales Agent'; $('s1n').className = 'stepn cur'; $('s1n').textContent = '1'; $('ranAt').textContent = ''; renderHint(); return; }
   $('title').textContent = c.name;
   const live = c.delivery_mode === 'LIVE';
   $('modeBadge').innerHTML = `<span class="dot"></span>${live ? 'LIVE · real prospects' : `STAND-IN · sends go to ${esc(c.stand_in_masked)}`}`;
