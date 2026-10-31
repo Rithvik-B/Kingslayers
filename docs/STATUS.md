@@ -24,7 +24,7 @@ a Meet link. The demo runs in STAND_IN mode: real data, but the one email goes t
 | Role | Name | Owns | Doing now |
 |---|---|---|---|
 | P1 | Rithvik | app shell, models, memory, routes, UI, README, demo | foundation push by 14:30 |
-| P2 | Dinesh | llm, crustdata, scoring, discovery, drafting | all P2 modules written and unit-tested; REST self-check waits on `.env` |
+| P2 | Dinesh | llm, crustdata, scoring, discovery, drafting | **Done.** Self-check passed through the app (limit 5): 15 companies, 3 READY contacts, 3 gated drafts, 22.5 credits in 30 s |
 | P3 | _(fill in)_ | gates, mail, calendar, outreach, inbox, booking | Composio check (send, thread, slots, Meet link) by 14:30 |
 
 ## Next steps
