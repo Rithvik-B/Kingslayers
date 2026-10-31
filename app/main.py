@@ -9,8 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse
 from pydantic import BaseModel
 from sqlalchemy import delete, func, select
 
@@ -32,6 +32,20 @@ from app.models import (
 
 STATIC = Path(__file__).parent / "static"
 app = FastAPI(title="Kingslayers Sales Agent")
+
+
+@app.exception_handler(ModuleNotFoundError)
+async def _missing_module(request: Request, exc: ModuleNotFoundError):
+    """A teammate's module isn't pushed yet: say which one instead of a bare 500."""
+    owner = {"discovery": "P2", "drafting": "P2", "llm": "P2", "crustdata": "P2", "scoring": "P2",
+             "outreach": "P3", "inbox": "P3", "booking": "P3", "mail": "P3", "calendar_io": "P3", "gates": "P3"}
+    name = (exc.name or "").removeprefix("app.")
+    return JSONResponse(503, {"detail": f"app.{name} is not pushed yet (owner: {owner.get(name, '?')})"})
+
+
+@app.exception_handler(Exception)
+async def _any_error(request: Request, exc: Exception):
+    return JSONResponse(500, {"detail": f"{type(exc).__name__}: {exc}"})
 
 
 # ---------- startup and background loop ----------
