@@ -1,0 +1,113 @@
+# ContextCon: past winning submissions
+
+Compiled 2026-10-31. Crustdata has never published an official results post for any ContextCon, so every
+placement below comes from participant posts on LinkedIn or X, GitHub READMEs, or profile pages.
+Confidence is marked per row. GitHub links are given where a public repo exists; where none was found after
+searching GitHub's API for every repo created on the hackathon dates, the row says so.
+
+Two build editions have happened. The ContextCon Deccan CTF (IIIT Hyderabad, 2 Oct 2026) was a security CTF,
+not a product hackathon, and is left out.
+
+---
+
+## Edition 1: ContextCon, 19 April 2026, Bengaluru (Crustdata x Y Combinator)
+
+| Item | Detail |
+|---|---|
+| Format | 5-6 hour build on Crustdata people and company APIs, working demo on stage, code plus short video submitted |
+| Selection | ~100-105 builders picked from 1,300-2,000+ applicants (YC Startup School India attendees) |
+| Prizes | 1st $8,000, 2nd $3,000, 3rd $1,000 in prizes; top 3 get 1-on-1 office hours with YC partner Jon Xu; Stripe Atlas fee waiver |
+| Judges | Phani Sama (redBus), Abhimanyu Saxena (Scaler), Karan Misra (StronkWorks), plus Lokit Kumar Paras |
+| Event pages | https://crustdata.com/contextcon and https://luma.com/6ftay6mq |
+
+### Winners
+
+| Place | Team / builder | Product | GitHub | Confidence and source |
+|---|---|---|---|---|
+| 1st | Team Greyhair | Nurse scheduling platform that manages hospital load. Built by people with years inside hospitals rather than engineers, using Claude for the build. A co-host's post says the first-place winner was a woman founder already running a startup who arrived late. | None public found | Medium. Attendee post by Sourashis Sarkar (LinkedIn) names the team, product, and judges. Chetan Sharma's post adds the founder detail. Team members never identified. |
+| 2nd | Team Polo | Competitor analytics plus script generation tool for content creators | None public found | Medium. Same Sourashis Sarkar post. |
+| Top 3 (place not stated) | Viral Barot | Real-time macOS meeting overlay. Listens to the conversation and, when a person or company is mentioned, instantly shows funding, team size, LinkedIn profile, and recent news pulled from Crustdata. | None public found. His GitHub account vbarot holds only forks. | Medium. His own LinkedIn post: "won YC's first hackathon in India ... picked up a few prizes and perks". The post is the only source tying this build to a prize. |
+| 4th of 3,000+ (self-described) | Soham Mehta (now Gooseworks, YC W23) | Not stated anywhere public | Not found | Low. Stackforce profile lists "Winner, ContextCon" and his bio says 4th. https://www.stackforce.co/talent/soham-mehta-co-founder-6a3a63f24fd8128eaf082de9 |
+| Claimed "ContextCon Winner" (place not stated) | Reflex, by Pranshu (Pranshu23x) with Jai Ganesh Sankar, who now works at Crustdata | AI market simulation engine for investment decisions. Natural-language thesis ("B2B SaaS in Europe with strong headcount growth and no US VC") is parsed into Crustdata search filters, companies are enriched (headcount, hiring, funding, investors, revenue), then a Bull analyst, a Bear analyst, and a committee layer debate in a streaming ReAct loop. Neo4j holds cross-company relationships. Output is an investment memo with verdict, evidence, and next steps. | https://github.com/Pranshu23x/Reflex (backend, frontend, simulation logs) | Low-medium. Only the builder's own profile README calls it a winner. Teammate works at Crustdata, which may be a hiring outcome rather than a prize. |
+
+Reading the three sources together: Sourashis Sarkar's post says exactly three teams won. Greyhair and Polo are
+named as first and second. Viral Barot says he won and collected prizes. The most consistent reading is
+Greyhair 1st, Polo 2nd, Viral Barot's overlay 3rd, with Soham Mehta's team just outside and Reflex either a
+special mention or an unverified claim. Treat that ordering as inference, not fact.
+
+### Other edition 1 submissions with public GitHub repos (did not place, or placement unknown)
+
+Found by querying GitHub for repos created on 19-20 April 2026 that reference ContextCon or Crustdata.
+
+| Product | What it does | GitHub |
+|---|---|---|
+| Career decisions, with comps | Paste a profile URL, get a data-grounded career read (tenure percentile, promotion velocity, likely next moves, comp bands) and "career twins" | https://github.com/victorvini08/crustdata-hackathon-yc (live: crustdata-hackathon-yc.vercel.app) |
+| DugOut | Multi-agent back office for IPL franchises: sponsorship discovery via company API, watcher-triggered outreach when a prospect raises, player-sponsor conflict filtering | https://github.com/bhavberi/contextcon |
+| Signal | AI sales intelligence, "know the exact moment to strike", mapped to YC RFS AI-native agencies. Loom demo in README | https://github.com/Vijaygaurav2004/Contextcon (live: contextcon-eight.vercel.app) |
+| PlaceMate | Hire and get hired from inside chat | https://github.com/pratik-naik003/ContextCon_Hack |
+| Precision Outreach | Agentic outreach that decides whether outreach is justified before writing it | https://github.com/dibyo10/contextcon-yc |
+| Crusty Crab Ventures / Mirror VC | AI general partner that ingests a16z, YC, Founders Fund, Khosla, SPC deals and surfaces cheaper second-mover companies via Crustdata company API | https://github.com/Saksham-Gupta-off/contextcon-context-pookies-main (live: contextcon-context-pookies-main.vercel.app) |
+| Values-based recruiting | Chat search for candidates scored against company values | https://github.com/pm-mylynk/contextcon |
+| Scout AI | VC deal flow: NL query to Crustdata filters, 0-100 scoring, one-click investment memo | https://github.com/MurluKrishna4352/contextcon |
+| Quant sentiment | Crustdata company API to generate buy/sell sentiment for stocks | https://github.com/Hardik-Aswal/ContextCon---CrustData-x-Y-Combinator---Entry---Quant |
+| ContextKings | Local-first research workflow builder: compiles a prompt into an inspectable Crustdata workflow you can edit then run | https://github.com/chayprabs/contextkings |
+| Riffle | Agentic recruiting: find pre-A startups hiring engineers without designers, source founding designers, rank | https://github.com/vinkamath/contextcon |
+| Resa | Research paper to investor-ready pitch deck via sequential agent swarm using Crustdata web and person search | https://github.com/Ranjeet-Wadkar/crustdata-contextcon2 (live: crustdata-contextcon3.vercel.app) |
+| Clear Edge | Business introspection brief from a company domain: market, competitors, customers, direction | https://github.com/AyushHazard/contextcon-clear-edge |
+| TalentFlow | Talent intelligence API on Crustdata plus Bedrock Claude | https://github.com/N0VA06/ContextCon-Talentflow |
+| Career DNA Wrapped | GitHub profile analyzer that generates shareable career wraps | https://github.com/patelchaitany/Contextcon |
+| Aidly | Real-time AI for industrial workers (Flutter), team of Sri Lekha and Viswa Kiran V. | https://github.com/viswakiranvvs/aidly_contextcon |
+| Anti-Gravity | "Market physics" telemetry for the Bengaluru tech ecosystem: Crustdata watcher for talent exodus, technographics, funding runway, 3D geospatial map | https://github.com/realvigneshmurugan1/contextCon-sim |
+| Unnamed | Python backend plus UI, deployed | https://github.com/praneeth7781/contextcon190426 (live: contextcon190426.vercel.app) |
+| Unnamed | Python backend and JS frontend | https://github.com/Jaan-Mustafa/ContextConBE and https://github.com/Jaan-Mustafa/ContextCon-FE |
+
+Projects described only in posts, no repo found: Dhruvil Moradiya's agent for micro-entrepreneurs to find GTM
+and tech talent; Ayushman Panda's GTM tool with Crustdata webhooks and 0-100 lead score (he says he did not
+win); Mitul Garg's co-founder finder and relationship builder on a personality-context agent.
+
+---
+
+## Edition 2: ContextCon Build, 24 October 2026, Crustdata office, Bengaluru
+
+| Item | Detail |
+|---|---|
+| Theme | "Services, Replaced": agents that turn a whole service into software. Examples given: a recruiter that returns an accepted offer, a diligence team that turns a data room into red flags, an underwriter that quotes or declines, a scout that finds founders before they raise, a fraud investigator that produces a case file |
+| Format | 40 hand-picked builders, 6 hours, 3-minute live demo plus 2 minutes of questions, People's Choice vote ("the demo they'd hire") |
+| Prizes | 1st $4,000, 2nd $2,000, 3rd $500 in prizes |
+| Event page | https://luma.com/4xdm1jm8 |
+
+### Winners
+
+Not public as of 2026-10-31. No post from Crustdata staff, the Luma page, or any participant names a placing.
+Check the Crustdata LinkedIn page and the hosts (Yash Balan, Nithish A, Jai Ganesh, Rishabh Raj) for a
+results post; it is one week after the event.
+
+### Submissions with public GitHub repos (placement unknown)
+
+| Product | What it does | GitHub |
+|---|---|---|
+| Backchannel | Off-list reference check agent. Crustdata employment history, finds ex-colleagues the founder did not list via dated overlap, voice agent (Bolna) phones the top reference and streams the transcript, returns FUND / LEAN / PASS with sub-scores, calls the VC back, schedules with the founder, emails an .ics | https://github.com/charles161/backchannel |
+| InterviewOS | "The recruiter that works for the candidate." LinkedIn URL plus resume PDF, person enrich, job search for two matching roles, person search for the hiring manager with a verified work email, evidence-traced outreach note, send guard, Gmail via Composio | https://github.com/Hritikd/interviewos |
+| VentureLens | VC sourcing and preliminary diligence agent: search by domain or thesis, peer contenders, 0-100 scoring, founder evaluation, evidence-backed brief. Walkthrough video linked in README | https://github.com/shubhamodi/VentureLabs and https://github.com/nithyakalamks/VentureLens-2.0 |
+| Verified B2B Research Agent | Chat and CLI agent that finds people (e.g. engineering leaders at 20-200 person Bengaluru startups) and runs review-and-approve survey forms to respondents | https://github.com/janakirampuli/crustdata-hackathon |
+| FairMatch AI | Two-sided matchmaking for senior engineers: dual dossiers, tier-1 job discovery, hiring manager and email-pattern finder, Gmail outreach, watchlist cron digests. Gemini plus Crustdata | https://github.com/diligent-0-0/contextcon |
+
+---
+
+## What the winners had in common
+
+- Every placing product put Crustdata data in front of a non-technical user at the moment of a decision: a shift chart, a creator's script, a name said out loud in a meeting.
+- Two of the three edition 1 winners were not sales or recruiting tools, even though most entries were.
+- The first-place team was domain experts, not engineers. Judges were founders and rewarded the problem, not the stack.
+- The one claimed winner with a public repo (Reflex) is the most technically ambitious entry, which suggests ambition alone did not decide the podium.
+
+## Primary sources
+
+- Sourashis Sarkar, LinkedIn: https://www.linkedin.com/in/sarkar-sourashis/ (names Greyhair, Polo, judges, "three teams won")
+- Viral Barot, LinkedIn: https://www.linkedin.com/in/barotviral/ (meeting overlay, "won")
+- Chetan Sharma, LinkedIn: https://www.linkedin.com/in/chetan10x/ (first-place founder detail, 105 attendees, 1,300 signups)
+- Pranshu23x profile README: https://github.com/Pranshu23x/Pranshu23x (Reflex "ContextCon Winner")
+- Jai Ganesh Sankar, LinkedIn: https://www.linkedin.com/in/jai-ganesh-sankar/ (Reflex teammate)
+- Soham Mehta, Stackforce: https://www.stackforce.co/talent/soham-mehta-co-founder-6a3a63f24fd8128eaf082de9
+- Rishabh Raj, LinkedIn: https://www.linkedin.com/in/rishabh-raj-b8811317b/ (ContextCon Build announcement)
+- Abhilash Chowdhary, X: https://x.com/TheChowdhary/status/2041945340803535127 (edition 1 announcement)

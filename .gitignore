@@ -1,0 +1,26 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Personal Claude Code files (shared ones live in .claude/ and CLAUDE.md)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Dependencies and build output
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+dist/
+build/
+.next/
+.vercel/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
