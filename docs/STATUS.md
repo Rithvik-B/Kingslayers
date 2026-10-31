@@ -24,7 +24,7 @@ a Meet link. The demo runs in STAND_IN mode: real data, but the one email goes t
 | Role | Name | Owns | Doing now |
 |---|---|---|---|
 | P1 | Rithvik | app shell, models, memory, routes, UI, README, demo | foundation push by 14:30 |
-| P2 | _(fill in)_ | llm, crustdata, scoring, discovery, drafting | Crustdata field-name check by 14:30 |
+| P2 | Dinesh | llm, crustdata, scoring, discovery, drafting | all P2 modules written and unit-tested; REST self-check waits on `.env` |
 | P3 | _(fill in)_ | gates, mail, calendar, outreach, inbox, booking | Composio check (send, thread, slots, Meet link) by 14:30 |
 
 ## Next steps
@@ -41,8 +41,9 @@ a Meet link. The demo runs in STAND_IN mode: real data, but the one email goes t
 
 - Does Composio's `CREATE_EVENT` return a Meet link for our seller account? P3 checks by 14:30. Fallback in
   `PLAN.md` §6.8.
-- What are the real business-email status values in Crustdata? P2 checks by 14:30 and sets
-  `ACCEPTED_EMAIL_STATUSES`.
+- ~~What are the real business-email status values in Crustdata?~~ **Answered (P2):** `deliverable`, `catch_all`,
+  `invalid`, `unknown`. Set `ACCEPTED_EMAIL_STATUSES=deliverable,catch_all` in `.env` and `.env.example`
+  (the `verified,valid` default matches nothing). Details: `docs/notes/crustdata-rest.md`.
 
 ## Blockers
 

@@ -478,9 +478,8 @@ async def run_discovery(campaign_id: str) -> None:
                                   status or "unknown",
                                   {"match_status": entry.get("match_status"),
                                    "business_emails": [{"status": e.get("status"), "crustdata_company_id": e.get("crustdata_company_id")} for e in emails]})
-                journal.log(campaign_id, "contact",
-                            f"Email status {status or 'none'} → {'READY' if contact.state == 'READY' else 'UNREACHABLE'}",
-                            contact_id=contact_id)
+                new_state = contact.state
+            journal.log(campaign_id, "contact", f"Email status {status or 'none'} → {new_state}", contact_id=contact_id)
         journal.log(campaign_id, "discovery", f"/person/enrich: {n_ready} of {len(contact_ids)} contacts have an accepted "
                     f"business email ({client.credits_used:.1f} credits so far)")
 
@@ -521,18 +520,27 @@ def _pick_featured(campaign_id: str) -> None:
             c.featured = False
         ready = [c for c in contacts if c.state == "READY" and c.company_id in companies]
         if not ready:
-            journal.log(campaign_id, "decision", "No READY contact to feature: every contact lacks an accepted business email")
-            return
+            none_ready = True
+        else:
+            none_ready = False
+    if none_ready:
+        journal.log(campaign_id, "decision", "No READY contact to feature: every contact lacks an accepted business email")
+        return
+    with session() as s:
+        contacts = s.scalars(select(Contact).where(Contact.campaign_id == campaign_id)).all()
+        companies = {c.id: c for c in s.scalars(select(Company).where(Company.campaign_id == campaign_id)).all()}
+        ready = [c for c in contacts if c.state == "READY" and c.company_id in companies]
         order = {"T1": 0, "T2": 1, "T3": 2, "T4": 3}
         ready.sort(key=lambda c: (order.get(companies[c.company_id].tier, 9), companies[c.company_id].rank or 999))
         pick = ready[0]
         pick.featured = True
+        pick_id, pick_name = pick.id, pick.name
         tier = companies[pick.company_id].tier
         company_name = companies[pick.company_id].name
-        s.flush()
-        rationale = (f"Top {tier} with a verified email" if tier in ("T1", "T2")
-                     else f"No T1/T2 contact has a verified email; best available is {tier}")
-        memory.record_decision(campaign_id, "decision.featured_contact",
-                               {"contact_id": pick.id, "name": pick.name, "company": company_name},
-                               source="agent:discovery", rationale=rationale)
-        journal.log(campaign_id, "decision", f"Featured {pick.name} at {company_name} ({rationale})", contact_id=pick.id)
+    # the session above is committed before these open their own (SQLite allows one writer)
+    rationale = (f"Top {tier} with a verified email" if tier in ("T1", "T2")
+                 else f"No T1/T2 contact has a verified email; best available is {tier}")
+    memory.record_decision(campaign_id, "decision.featured_contact",
+                           {"contact_id": pick_id, "name": pick_name, "company": company_name},
+                           source="agent:discovery", rationale=rationale)
+    journal.log(campaign_id, "decision", f"Featured {pick_name} at {company_name} ({rationale})", contact_id=pick_id)
