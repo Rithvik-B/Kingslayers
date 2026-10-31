@@ -1,3 +1,5 @@
+> **Not used in the hackathon build** (see `PLAN.md`): the app calls Crustdata REST directly, not the skills. Kept as research.
+
 # Crustdata skills plugin, and running it from our app with the Claude Agent SDK
 
 2026-10-31, Rithvik (via Claude). From the Crustdata docs, the plugin's GitHub repo, and the Agent SDK docs.

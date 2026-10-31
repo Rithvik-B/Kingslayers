@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Campaign live view - wireframe</title>
+<!-- Rough wireframe. System fonts, gray borders, no color on purpose. -->
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; margin: 0; background: #fff; color: #222; font-size: 13px; }
+  .bar { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 2px solid #888; }
+  .bar h1 { font-size: 17px; margin: 0 12px 0 0; }
+  .badge { border: 1.5px dashed #666; padding: 3px 8px; border-radius: 4px; font-size: 11px; }
+  .badge.solid { border-style: solid; font-weight: 600; }
+  .spacer { flex: 1; }
+  .btn { border: 2px solid #333; padding: 7px 12px; border-radius: 4px; background: #fff; font-weight: 600; }
+  .btn.big { padding: 8px 16px; border-width: 3px; }
+  .wrap { display: grid; grid-template-columns: 1fr 380px; gap: 0; height: calc(100vh - 56px); }
+  .main { padding: 16px 18px; overflow: hidden; border-right: 2px solid #aaa; }
+  .funnel { display: flex; gap: 6px; margin-bottom: 16px; }
+  .step { flex: 1; border: 1.5px solid #888; padding: 8px; text-align: center; border-radius: 3px; }
+  .step b { display: block; font-size: 20px; }
+  .step.hit { border: 3px solid #222; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; border-bottom: 1px solid #ccc; padding: 7px 6px; vertical-align: top; }
+  th { font-size: 11px; color: #555; border-bottom: 2px solid #888; }
+  .chip { display: inline-block; border: 1px solid #777; border-radius: 10px; padding: 1px 7px; font-size: 11px; margin: 1px 0; }
+  .rcpt { font-size: 10px; border: 1px dotted #555; padding: 0 4px; margin-left: 3px; }
+  .status-booked { border: 2.5px solid #000; font-weight: 700; }
+  .muted { color: #777; font-size: 11px; }
+  .journal { padding: 16px 16px; overflow: hidden; }
+  .journal h2, .main h2 { font-size: 13px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .04em; color: #444; }
+  .ev { border-left: 2px solid #999; padding: 4px 0 10px 12px; position: relative; }
+  .ev:before { content: ""; width: 8px; height: 8px; border: 1.5px solid #555; border-radius: 50%; background: #fff; position: absolute; left: -6px; top: 6px; }
+  .ev time { font-size: 10px; color: #777; display: block; }
+  .booked { border: 3px solid #111; border-radius: 6px; padding: 12px; margin-bottom: 14px; }
+  .booked h3 { margin: 0 0 6px; font-size: 15px; }
+  .booked .row { display: flex; justify-content: space-between; font-size: 12px; padding: 2px 0; }
+  .note { font-size: 10px; color: #888; font-style: italic; }
+</style>
+</head>
+<body>
+
+<!-- 1. Top bar: what is running, is it live, is it safe, how to stop it. Safety badge is always visible so judges never wonder if strangers got emailed. -->
+<div class="bar">
+  <h1>TalentFlow · India outbound</h1>
+  <span class="badge solid">LIVE DATA · Crustdata</span>
+  <span class="badge">Sends rerouted → stand-in: judge@… (1 inbox)</span>
+  <span class="badge">Demo clock: Day 0</span>
+  <div class="spacer"></div>
+  <button class="btn">⏩ Fast-forward 3 days</button>
+  <button class="btn big">⏸ Pause campaign</button>
+</div>
+
+<div class="wrap">
+  <div class="main">
+    <!-- 2. Funnel: one glance answers "how far did the agent get?" The Booked step is the heaviest border. -->
+    <h2>Pipeline</h2>
+    <div class="funnel">
+      <div class="step"><b>46</b>Discovered</div>
+      <div class="step"><b>20</b>Qualified</div>
+      <div class="step"><b>38</b>Contacts<br><span class="muted">31 w/ verified email</span></div>
+      <div class="step"><b>12</b>Emailed</div>
+      <div class="step"><b>3</b>Replied</div>
+      <div class="step hit"><b>1</b>Booked</div>
+    </div>
+
+    <!-- 3. Ranked prospects. Fit and coverage are separate columns (spec 6.3: 100% fit at 10% coverage is not a match). Every signal chip has a receipt link to the Crustdata record. -->
+    <h2>Ranked prospects <span class="muted">(click any [src] to see the Crustdata record)</span></h2>
+    <table>
+      <tr><th>#</th><th>Company</th><th>Tier</th><th>Fit</th><th>Coverage</th><th>Why now</th><th>Contact</th><th>Status</th></tr>
+      <tr><td>1</td><td><b>[Company A]</b><br><span class="muted">Logistics · 1,200 emp · Bengaluru</span></td><td>T1</td><td>100%</td><td>86%</td>
+          <td><span class="chip">6 open recruiter roles</span><span class="rcpt">src</span><br><span class="chip">Headcount +34% / 12 mo</span><span class="rcpt">src</span></td>
+          <td>[Name], Head of Talent Acq.<br><span class="muted">CHAMPION · email verified</span></td><td><span class="chip status-booked">BOOKED</span></td></tr>
+      <tr><td>2</td><td><b>[Company B]</b><br><span class="muted">Fintech · 640 emp · Mumbai</span></td><td>T1</td><td>100%</td><td>80%</td>
+          <td><span class="chip">Raised Series C</span><span class="rcpt">src</span></td>
+          <td>[Name], VP People<br><span class="muted">ECONOMIC_BUYER · email verified</span></td><td><span class="chip">Replied: Question</span></td></tr>
+      <tr><td>3</td><td><b>[Company C]</b><br><span class="muted">Healthtech · 410 emp · Pune</span></td><td>T2</td><td>83%</td><td>67%</td>
+          <td><span class="chip">4 open TA roles</span><span class="rcpt">src</span></td>
+          <td>[Name], TA Lead<br><span class="muted">CHAMPION · email verified</span></td><td><span class="chip">Follow-up 1 due Day 3</span></td></tr>
+      <tr><td>4</td><td><b>[Company D]</b><br><span class="muted">SaaS · 300 emp · Hyderabad</span></td><td>T2</td><td>80%</td><td>60%</td>
+          <td><span class="chip">New CHRO hired</span><span class="rcpt">src</span></td>
+          <td>[Name], CHRO<br><span class="muted">no email on file → manual task</span></td><td><span class="chip">Unreachable</span></td></tr>
+      <tr><td>5</td><td><b>[Company E]</b><br><span class="muted">Retail · 2,100 emp · Delhi</span></td><td>T3</td><td>67%</td><td>50%</td>
+          <td><span class="chip">—</span></td>
+          <td>[Name], HR Director</td><td><span class="chip">Suppressed: not interested</span></td></tr>
+    </table>
+    <p class="note">Company and person names are filled from live Crustdata at demo time. Placeholders here on purpose.</p>
+  </div>
+
+  <!-- 4. Journal: the "agent at work" view. Newest on top. The booked card pins above the timeline so it's the first thing seen at the end of the demo. -->
+  <div class="journal">
+    <h2>Agent journal</h2>
+    <div class="booked">
+      <h3>✓ Meeting booked</h3>
+      <div class="row"><span>Tue 4 Nov · 11:00–11:20 IST</span><span>Google Meet</span></div>
+      <div class="row"><span>[Name] · [Company A]</span><span>meet.google.com/xxx-xxxx</span></div>
+      <div class="row muted"><span>Accepted in reply: "Tuesday 11 works"</span><span>event id ✓</span></div>
+    </div>
+    <div class="ev"><time>12:41</time>Calendar event created, invite sent. Marked BOOKED.</div>
+    <div class="ev"><time>12:41</time>Re-checked free/busy for Tue 11:00: free.</div>
+    <div class="ev"><time>12:40</time>Reply from stand-in: "Tuesday 11 works". Parsed slot, acceptance clear.</div>
+    <div class="ev"><time>12:38</time>Offered 3 slots (free/busy checked, 10 min buffers).</div>
+    <div class="ev"><time>12:37</time>Reply classified INTERESTED (0.93).</div>
+    <div class="ev"><time>12:31</time>Sent to [Name] → rerouted to stand-in. Cited: 6 open recruiter roles <span class="rcpt">src</span></div>
+    <div class="ev"><time>12:30</time>Draft passed send gates: verified email, not suppressed, cap 1/10.</div>
+    <div class="ev"><time>12:22</time>Qualified [Company A]: 3/3 mandatory pass, coverage 86%.</div>
+    <div class="ev"><time>12:20</time>Found 46 companies for "AI recruiting for 200+ employee firms in India".</div>
+  </div>
+</div>
+</body>
+</html>

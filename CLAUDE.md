@@ -4,6 +4,17 @@ This is a team repo. Each teammate runs their own Claude Code on it, so **the re
 memory**. Anything a teammate or their Claude would need to know goes in the repo. Your personal
 auto-memory and the chat are not shared with anyone.
 
+## Building? `PLAN.md` is the contract
+
+**We are in the build.** `PLAN.md` at the repo root defines the stack, the file ownership (P1, P2, P3), every
+module's contract, the routes, the UI and the demo. It wins over every other doc, including
+`docs/reference/`.
+- Build only what `PLAN.md` lists.
+- Edit only the files your person owns (`PLAN.md` §3).
+- Never substitute the stack: FastAPI + one HTML page, Crustdata REST, Composio for Gmail and Calendar,
+  Claude via the Agent SDK.
+- If a contract seems wrong, tell your user rather than working around it.
+
 ## Current state
 
 @docs/STATUS.md
@@ -30,6 +41,9 @@ auto-memory and the chat are not shared with anyone.
 
 | Path | What |
 |---|---|
+| `PLAN.md` | **The build contract.** Stack, ownership, module contracts, routes, UI, demo. Wins over everything. |
+| `TODOS.md` | Deferred work. Do not build it today. |
+| `docs/reference/` | The old BUILD_SPEC and long spec. Reference only, for the sections `PLAN.md` cites. |
 | `docs/STATUS.md` | Live board: phase, who is on what, next steps, open questions. Keep it current. |
 | `docs/decisions/` | One file per team decision. Format and rules: `docs/decisions/README.md`. |
 | `docs/ideas/` | One file per idea while we pick what to build. Template and scoring: `docs/ideas/README.md`. |
@@ -56,7 +70,8 @@ auto-memory and the chat are not shared with anyone.
    so that STATUS.md shows what was done and what comes next.
 7. **Git.** Pull before starting work. Make small commits. Run `git pull --rebase` before `git push`. Never
    force-push `main`. Push doc-only changes (decisions, ideas, notes, STATUS.md) right away so teammates see
-   them; the team agreed to this in the first decision. Commit and push code only when the user asks.
+   them; the team agreed to this in the first decision. During the build, commit and push your own files at
+   least every 10 minutes, as `PLAN.md` §4 says. Otherwise, commit and push code only when the user asks.
 8. **Secrets** go in `.env`, which is gitignored. `.env.example` lists the variable names and never holds
    values.
 
@@ -68,5 +83,9 @@ auto-memory and the chat are not shared with anyone.
 
 ## Code
 
-Nothing built yet. The stack and repo layout will be recorded as a decision. Once that happens, replace this
-section with how to run, test and demo the app.
+- **Run:** `.venv/bin/uvicorn app.main:app --port 8000`. **Test:** `.venv/bin/pytest -q`.
+- **Layout and owners:** `PLAN.md` §3.
+- **The app's LLM calls use the developer's Claude Max login** through the Agent SDK. Never set
+  `ANTHROPIC_API_KEY`. In the app, always pass `setting_sources=[]`, so this file and the repo's hooks don't
+  load into its LLM calls.
+- **STAND_IN is the default delivery mode.** The recipient guard in `app/mail.py` must fail closed.

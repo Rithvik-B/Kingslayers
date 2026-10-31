@@ -1,3 +1,5 @@
+> **For the build** (see `PLAN.md`): we use Composio tools but **no triggers or webhooks**; replies are read by polling threads every 15 s.
+
 # Composio with Gmail, Google Calendar, Google Meet and Slack
 
 2026-10-31, Rithvik (via Claude). Checked against the Composio and Google docs on that date. Re-check limits

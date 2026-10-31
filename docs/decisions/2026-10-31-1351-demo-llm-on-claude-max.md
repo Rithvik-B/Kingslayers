@@ -1,6 +1,6 @@
 ---
 title: The demo's LLM is Claude through the Agent SDK on Rithvik's Claude Max subscription, with the backend on his laptop
-status: accepted
+status: superseded by 2026-10-31-1425-final-build-plan-and-stack.md
 date: 2026-10-31
 decided_by: Rithvik
 ---
