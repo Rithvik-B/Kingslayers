@@ -5,7 +5,7 @@ BOOKED only when Google returned both an event id and a Meet link.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from app import calendar_io, db, gates, journal, mail, memory
@@ -260,7 +260,7 @@ async def handle_slot_reply(contact_id: str, text: str, *, message_id: str | Non
         err = "Calendar returned no Meet link" if res.get("event_id") else "Calendar returned no event id"
     with db.session() as s:
         row = s.get(m.Meeting, meeting_id)
-        row.start_at, row.end_at = start, end
+        row.start_at, row.end_at = start.astimezone(timezone.utc), end.astimezone(timezone.utc)
         row.event_id, row.meet_link = res.get("event_id"), res.get("meet_link")
         row.accepted_message_id = message_id
         row.status = "BOOKED" if booked else "MEETING_READY_TO_BOOK"
