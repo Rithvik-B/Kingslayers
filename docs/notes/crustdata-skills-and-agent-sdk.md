@@ -51,8 +51,27 @@ Credit costs mentioned in the skills: `person_enrich` 1, `company_enrich` 2 per 
   relative to it.
 - **Cost figures:** `total_cost_usd` is the SDK's own estimate, not what we're billed.
 
+## Running headless: auth and LLM endpoint (checked 2026-10-31)
+
+- **The plugin's `.mcp.json` has no auth.** It is only `{"type": "http", "url": "https://install.crustdata.com/mcp"}`
+  and relies on the browser login.
+- **The Crustdata MCP server takes an API key headlessly** as `Authorization: Bearer <CRUSTDATA_API_KEY>`
+  (per the MCP docs). In the Agent SDK, define the `crustdata` MCP server ourselves with that header.
+  - **Untested:** whether the plugin's skills then use our server.
+  - **Fallback:** fork the plugin and add the header to its `.mcp.json`.
+- **The Agent SDK needs an endpoint in Anthropic Messages format.**
+  - AIML API documents `POST https://api.aimlapi.com/v1/messages` (Anthropic format, with tools) alongside
+    its OpenAI-compatible `/v1/chat/completions`.
+  - The Claude models listed for `/v1/messages` are the 4.x family (for example `claude-sonnet-4-6`,
+    `claude-opus-4-7`).
+  - Claude Code and the Agent SDK aren't documented as working with it. **Untested:**
+    `ANTHROPIC_BASE_URL=https://api.aimlapi.com`, plus the right auth variable and model ID.
+  - **Fallback:** a direct Anthropic API key for the Agent SDK, and AIML only for simple one-shot LLM calls.
+
 ## Sources
 
+- https://docs.crustdata.com/for-agents/mcp
+- https://docs.aimlapi.com/api-references/text-models-llm/anthropic
 - https://docs.crustdata.com/integrations/claude-plugin
 - https://github.com/crustdata/skills (skills/icp-builder, skills/social-connections, skills/sales-outreach SKILL.md)
 - https://code.claude.com/docs/en/agent-sdk/plugins.md
