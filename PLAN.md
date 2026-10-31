@@ -238,7 +238,7 @@ TIMEZONE=Asia/Kolkata
 DISCOVERY_COMPANY_LIMIT=5    # 5 while developing, to save credits; set 20 for the demo pre-run
 CONTACTS_PER_COMPANY=1
 CREDIT_CEILING_PER_RUN=150
-ACCEPTED_EMAIL_STATUSES=verified,valid   # P2 confirms the real values at 14:15
+ACCEPTED_EMAIL_STATUSES=verified,valid   # P2 confirms the real values in its smoke test
 ```
 
 ## 3. Repo layout and ownership (only the owner edits a file)
@@ -372,7 +372,7 @@ class CrustdataClient:
 - **Endpoints:** `POST https://api.crustdata.com/company/search` (natural-language `search` or `filters`;
   max 100), `/job/search`, `/person/search`, `/person/enrich`. **`/person/contact/enrich` is disabled on
   our key; don't use it.**
-- **Don't guess field names.** At 14:15, read https://docs.crustdata.com for each endpoint and make one tiny
+- **Don't guess field names.** First, in the smoke test, read https://docs.crustdata.com for each endpoint and make one tiny
   real call per endpoint (`scripts/smoke_crustdata.py`). Write the request and response field names into
   `docs/notes/crustdata-rest.md`. Re-check the key's enabled endpoints (the free `account_endpoints`
   check, `docs/notes/crustdata-endpoints.md`).
@@ -529,7 +529,7 @@ async def fetch_thread(thread_id: str) -> list[dict]
 - **Replies stay in the thread.** Send them with the stored `thread_id` through Composio's
   reply-to-thread tool.
 - **Composio:** `Composio(api_key=S.COMPOSIO_API_KEY)` and `composio.tools.execute(<SLUG>, user_id=S.COMPOSIO_USER_ID, arguments={...})`.
-  The SDK is sync, so wrap calls in `asyncio.to_thread`. At 14:15, verify the slugs and argument names from
+  The SDK is sync, so wrap calls in `asyncio.to_thread`. First, in the smoke test, verify the slugs and argument names from
   the installed SDK or Composio's toolkit pages (expected: `GMAIL_SEND_EMAIL`, `GMAIL_REPLY_TO_THREAD`, a
   fetch-thread tool). Record them in `docs/notes/composio-tools.md`. Composio's `initiate()` is retired;
   connections already exist.
@@ -551,7 +551,7 @@ async def create_meeting(campaign, contact, meeting_id: str, *, start, end, titl
 - **Avoiding double bookings:** put the marker `[kingslayers-mtg:<meeting_id>]` in the description. Before
   creating, search that day's events for the marker. If a non-cancelled one exists, return it instead of
   creating another.
-- **The Meet-link risk (test it at 14:15):** Composio's docs say personal Gmail accounts may get **no Meet
+- **The Meet-link risk (test it first, in the smoke test):** Composio's docs say personal Gmail accounts may get **no Meet
   link** from `CREATE_EVENT`. If the smoke test shows that, connect the Google Meet toolkit for the same
   `COMPOSIO_USER_ID`, create a space with `GOOGLEMEET_CREATE_MEET`, and put its real link in the event's
   location and description. Return that as `meet_link`. Never invent a link.
