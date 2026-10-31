@@ -205,15 +205,19 @@ class CrustdataClient:
         complete = total is not None and int(total) <= len(jobs)
         return by_company, complete
 
-    async def person_search(self, *, company: dict, titles: list[str], limit: int = 5) -> list[dict]:
+    async def person_search(self, *, company: dict, titles: list[str], limit: int = 5,
+                            verified_only: bool = False) -> list[dict]:
         """People currently at `company` whose current title fuzzy-matches any of `titles`.
-        Returns the raw `profiles` rows (with contact.has_business_email and the LinkedIn profile_url)."""
+        verified_only adds the filter experience.employment_details.current.business_email_verified = true, so
+        the people returned already have a verified business email at this employer (enrich then returns
+        status deliverable). Returns the raw `profiles` rows (with contact.has_business_email and the profile_url)."""
         cid = company_id_of(company)
         if cid is None:
             raise CrustdataError("person_search: company has no crustdata_company_id")
         title_or = group("or", [cond("experience.employment_details.current.title", "(.)", t)
                                 for t in titles if t and t.strip()])
-        filters = group("and", [cond("experience.employment_details.current.company_id", "=", cid), title_or])
+        verified = cond("experience.employment_details.current.business_email_verified", "=", True) if verified_only else None
+        filters = group("and", [cond("experience.employment_details.current.company_id", "=", cid), verified, title_or])
         body = {"filters": filters, "fields": PERSON_FIELDS, "limit": max(1, min(int(limit), 100))}
         data = await self._post("/person/search", body, estimate=EST_PERSON,
                                 count_results=lambda d: len(d.get("profiles") or []))

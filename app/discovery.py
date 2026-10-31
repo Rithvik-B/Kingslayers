@@ -11,6 +11,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 from datetime import datetime, timezone
 from typing import Any
 
@@ -113,9 +114,13 @@ outsourcers that provide that same function as a service, for example ["Staffing
 "Human Resources Services", "Human Resources", "Outsourcing and Offshoring Consulting"] for a recruiting
 product. Explain it in the rationale.
 
-person_titles are 4 to 8 job titles of the buyer or champion to search for. job_keywords are 2 to 5 words that
-appear in the titles of the job postings that signal the pain the product solves. voice.max_words is 90 to 110.
-Invent no customers or metrics."""
+person_titles are 4 to 8 job titles of the buyer or champion to search for; mix senior titles with the
+hands-on ones (for recruiting: "Talent Acquisition", "Recruitment", "HR"), since mid-size companies rarely
+have a Head or VP of the function. job_keywords are 2 to 6 words that appear in the titles of the job postings
+the TARGET companies publish and that signal the pain the product solves. If the product helps companies hire
+more or faster, the signal is hiring volume itself, so use the high-volume roles those employers post (for
+example "Engineer", "Developer", "Analyst", "Executive", "Associate", "Sales"), not recruiter titles, which
+are mostly posted by staffing agencies. voice.max_words is 90 to 110. Invent no customers or metrics."""
 
 
 def _normalize_icp(icp: dict) -> tuple[dict, int]:
@@ -186,6 +191,23 @@ def role_for_title(title: str) -> str:
     if any(k in t for k in _CHAMPION_LEVEL) and any(k in t for k in _CHAMPION_AREA):
         return "CHAMPION"
     return "OTHER"
+
+
+_LEVEL_WORDS = {"head", "vp", "svp", "evp", "avp", "vice", "president", "director", "chief", "officer", "manager",
+                "lead", "senior", "sr", "junior", "jr", "global", "regional", "india", "associate", "assistant",
+                "executive", "specialist", "partner", "of", "the", "and", "&", "-", ",", "group"}
+
+
+def _broaden_titles(titles: list[str]) -> list[str]:
+    """'Head of Talent Acquisition', 'VP People', 'HR Director' -> ['Talent Acquisition', 'People', 'HR'].
+    The function words of the ICP titles, for a wider person search when the exact titles find nobody."""
+    out: list[str] = []
+    for t in titles:
+        words = [w for w in re.split(r"[\s/|,()]+", t) if w and w.lower().strip(".") not in _LEVEL_WORDS]
+        phrase = " ".join(words).strip()
+        if len(phrase) >= 2 and phrase.lower() not in {o.lower() for o in out}:
+            out.append(phrase)
+    return out[:6]
 
 
 def _company_filters(icp: dict) -> dict | None:
@@ -424,22 +446,42 @@ async def run_discovery(campaign_id: str) -> None:
         top = eligible[:limit]
         sem = asyncio.Semaphore(5)
 
+        broad_titles = _broaden_titles(titles)
+
         async def people(r):
+            """Up to four passes, cheapest-and-best first, stopping as soon as someone reachable is found:
+            ICP titles with a verified business email, broadened titles with one, then the same without the flag."""
             async with sem:
+                persons: list[dict] = []
+                seen: set = set()
+                passes = [(titles, True, 5)]
+                if broad_titles:
+                    passes.append((broad_titles, True, 10))
+                passes += [(titles, False, 5)] + ([(broad_titles, False, 10)] if broad_titles else [])
                 try:
-                    return r, await client.person_search(company=r["raw"], titles=titles, limit=5)
+                    for ts, verified_only, lim in passes:
+                        found = await client.person_search(company=r["raw"], titles=ts, limit=lim, verified_only=verified_only)
+                        for p in found:
+                            if p.get("crustdata_person_id") not in seen:
+                                seen.add(p.get("crustdata_person_id"))
+                                p["_verified_flag"] = verified_only
+                                persons.append(p)
+                        if any((p.get("contact") or {}).get("has_business_email") for p in persons):
+                            break
+                    return r, persons
                 except CreditCeilingReached:
                     raise
                 except CrustdataError as e:
                     log.warning("person_search failed for %s: %s", r["name"], e)
-                    return r, []
+                    return r, persons
 
         found = await asyncio.gather(*(people(r) for r in top))
         role_rank = {"CHAMPION": 0, "ECONOMIC_BUYER": 0, "OTHER": 1}
         contact_ids: list[tuple[str, dict]] = []  # (contact_id, person row)
         with session() as s:
             for r, persons in found:
-                persons = sorted(persons, key=lambda p: (0 if (p.get("contact") or {}).get("has_business_email") else 1,
+                persons = sorted(persons, key=lambda p: (0 if p.get("_verified_flag") else 1,
+                                                         0 if (p.get("contact") or {}).get("has_business_email") else 1,
                                                          role_rank[role_for_title((p.get("basic_profile") or {}).get("current_title") or "")]))
                 for p in persons[:max(1, int(S.CONTACTS_PER_COMPANY))]:
                     bp = p.get("basic_profile") or {}
