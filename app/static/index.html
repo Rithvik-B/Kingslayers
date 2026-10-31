@@ -189,6 +189,14 @@
   </aside>
 </div>
 
+<!-- ====== memory overlay (used during setup) ====== -->
+<div id="memOverlay" class="hidden fixed inset-0 z-30 overflow-auto fade" style="background:rgba(11,15,23,.92);backdrop-filter:blur(6px)">
+  <div class="mx-auto max-w-3xl my-8 card p-6 text-[13px]">
+    <div class="flex items-center mb-3"><div class="font-semibold text-[16px]">🧠 Memory &amp; decisions</div><button class="btn sm ghost ml-auto" onclick="closeMemOverlay()">✕ close</button></div>
+    <div id="memOverlayBody" class="text-xs"></div>
+  </div>
+</div>
+
 <!-- ====== company detail ====== -->
 <div id="company" class="hidden fixed inset-0 z-30 overflow-auto fade" style="background:rgba(11,15,23,.92);backdrop-filter:blur(6px)">
   <div class="mx-auto max-w-5xl my-8 card p-6 text-[13px]" id="companyBody"></div>
@@ -251,7 +259,9 @@ $('genIcpBtn').onclick = $('regenBtn').onclick = async () => {
   $('icpSpin').classList.add('hidden');
 };
 $('approveBtn').onclick = async () => { try { await api('POST', `/api/campaigns/${campaignId}/icp/approve`); lastIcpKey = ''; await refresh(); } catch (e) { showErr(e); } };
-$('editIcpBtn').onclick = () => { $('main').classList.remove('hidden'); setTab('memory'); window.scrollTo({ top: 0 }); };
+$('editIcpBtn').onclick = async () => { $('memOverlay').classList.remove('hidden'); await loadMemory($('memOverlayBody')); };
+function closeMemOverlay() { $('memOverlay').classList.add('hidden'); lastIcpKey = ''; renderIcp(); }
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMemOverlay(); });
 $('discoverBtn').onclick = async () => {
   try { await api('POST', `/api/campaigns/${campaignId}/discover`); $('discSpin').classList.remove('hidden'); await refresh(); } catch (e) { showErr(e); }
 };
@@ -286,7 +296,7 @@ async function refresh() {
     ]);
     companiesData = cos;
     render(); renderJournal(jr); renderBooked(mt);
-    if (currentTab === 'memory') loadMemory();
+    if (currentTab === 'memory' && $('memOverlay').classList.contains('hidden')) loadMemory();
     if (openDraftContact) loadDraft(openDraftContact, true);
   } catch (e) { showErr(e); }
 }
@@ -550,12 +560,13 @@ function renderBooked(meetings) {
 }
 
 // ---------- memory panel ----------
-async function loadMemory() {
+async function loadMemory(target) {
+  const root = target || $('memoryPanel');
   try {
     const m = await api('GET', `/api/memory?campaign_id=${campaignId || ''}`);
     const groups = [['Product & GTM', ['product.profile', 'gtm.icp']], ['Voice & rules', ['voice.style', 'outreach.rules']], ['Preferences', ['scheduling.prefs', 'reply.prefs']]];
     const all = Object.values(m.knowledge).flat();
-    const hint = { 'gtm.icp': ['↻ Re-run discovery', () => $('discoverBtn').click()], 'product.profile': ['↻ Regenerate drafts', regen], 'voice.style': ['↻ Regenerate drafts', regen], 'outreach.rules': ['↻ Regenerate drafts', regen] };
+    const hint = { 'gtm.icp': ['↻ Re-run discovery', () => { closeMemOverlay(); $('discoverBtn').click(); }], 'product.profile': ['↻ Regenerate drafts', regen], 'voice.style': ['↻ Regenerate drafts', regen], 'outreach.rules': ['↻ Regenerate drafts', regen] };
     let html = `<div class="dim mb-3">Everything the agent believes about you, and every decision it or you made. <b style="color:var(--text)">Edit anything</b>; agents read it on their next step.</div>`;
     html += `<div class="text-[10.5px] uppercase tracking-wider dim mb-2">Decisions · newest first</div><ul class="tl mb-4">` +
       (m.decisions.length ? m.decisions.map(d => `<li class="${d.source === 'user' ? 'k-memory' : ''}"><div class="dim text-[10.5px] mono">${fmtT(d.created_at)} <span class="tag ${d.source === 'user' ? 'you' : 'agent'}">${d.source === 'user' ? 'you' : 'agent'}</span>${esc(d.key.replace('decision.', '').replace(/_/g, ' '))}</div>
@@ -578,13 +589,13 @@ async function loadMemory() {
       }
     }
     html += `<a class="dim underline" href="/api/memory/export?campaign_id=${campaignId || ''}" target="_blank">export as Markdown</a>`;
-    $('memoryPanel').innerHTML = html;
-    $('memoryPanel').querySelectorAll('[data-key]').forEach(box => {
+    root.innerHTML = html;
+    root.querySelectorAll('[data-key]').forEach(box => {
       const k = box.dataset.key;
       box.querySelector('.editBtn').onclick = () => box.querySelector('.editBox').classList.toggle('hidden');
       box.querySelector('.cancelBtn').onclick = () => box.querySelector('.editBox').classList.add('hidden');
       box.querySelector('.saveBtn').onclick = async () => {
-        try { const value = JSON.parse(box.querySelector('textarea').value); await api('PUT', '/api/memory', { campaign_id: null, key: k, value }); lastIcpKey = ''; await loadMemory(); await renderIcp(); }
+        try { const value = JSON.parse(box.querySelector('textarea').value); await api('PUT', '/api/memory', { campaign_id: null, key: k, value }); lastIcpKey = ''; await loadMemory(root); await renderIcp(); }
         catch (e) { showErr(e); }
       };
       const hb = box.querySelector('.hintBtn'); if (hb) hb.onclick = hint[k][1];
