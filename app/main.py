@@ -314,6 +314,50 @@ def list_companies(campaign_id: str):
         return {"ranked": ranked, "needs_evidence": needs_evidence, "excluded": excluded}
 
 
+@app.get("/api/companies/{company_id}")
+def company_detail(company_id: str):
+    """Everything stored about one company: profile, criteria with receipts, signals, contacts, drafts."""
+    with session() as db:
+        co = db.get(Company, company_id)
+        if co is None:
+            raise HTTPException(404, "company not found")
+        contacts = db.scalars(select(Contact).where(Contact.company_id == company_id)).all()
+        ev_rows = db.scalars(select(Evidence).where(Evidence.subject_id.in_([company_id] + [c.id for c in contacts]))).all()
+        evidence = [{
+            "id": e.id, "subject_type": e.subject_type, "endpoint": e.endpoint, "field_path": e.field_path,
+            "value": e.value, "source_url": e.source_url, "retrieved_at": e.retrieved_at.isoformat() if e.retrieved_at else None,
+        } for e in ev_rows]
+        out_contacts = []
+        for ct in contacts:
+            msgs = db.scalars(
+                select(Message).where(Message.contact_id == ct.id).order_by(Message.created_at.asc())
+            ).all()
+            meeting = db.scalars(select(Meeting).where(Meeting.contact_id == ct.id).order_by(Meeting.created_at.desc())).first()
+            d = _contact_dict(ct)
+            d["messages"] = [{
+                "id": m.id, "direction": m.direction, "kind": m.kind, "subject": m.subject, "body": m.body,
+                "status": m.status, "gate_status": m.gate_status, "sent_at": m.sent_at.isoformat() if m.sent_at else None,
+                "received_at": m.received_at.isoformat() if m.received_at else None,
+            } for m in msgs]
+            d["meeting"] = {"status": meeting.status, "start_at": meeting.start_at.isoformat() if meeting.start_at else None,
+                            "meet_link": meeting.meet_link} if meeting else None
+            d["reach"] = ("Verified business email on file; the agent emails them and handles the reply."
+                          if ct.verified_email else
+                          "No verified email. Reach out via their LinkedIn profile (manual task), or re-run with a wider email policy.")
+            out_contacts.append(d)
+        raw = co.raw or {}
+        return {
+            "id": co.id, "crustdata_id": co.crustdata_id, "name": co.name, "domain": co.domain,
+            "website": (f"https://{co.domain}" if co.domain and not co.domain.startswith("http") else co.domain),
+            "industry": co.industry, "country": co.country, "city": co.city, "headcount": co.headcount,
+            "headcount_growth_12m": co.headcount_growth_12m, "fit": co.fit, "coverage": co.coverage, "tier": co.tier,
+            "rank": co.rank, "why_now": co.why_now or [], "criteria": co.criteria or [],
+            "description": raw.get("description") or raw.get("about") or raw.get("summary") or raw.get("short_description"),
+            "linkedin_url": raw.get("linkedin_profile_url") or raw.get("linkedin_url") or (raw.get("social_handles") or {}).get("linkedin"),
+            "raw": raw, "evidence": evidence, "contacts": out_contacts,
+        }
+
+
 @app.get("/api/evidence/{evidence_id}")
 def get_evidence(evidence_id: str):
     with session() as db:

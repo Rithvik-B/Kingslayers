@@ -4,106 +4,209 @@
 <meta charset="utf-8">
 <title>Kingslayers · Sales Agent</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  .pill{display:inline-block;border:1px solid #cbd5e1;border-radius:999px;padding:1px 8px;font-size:11px;white-space:nowrap}
-  .chip{display:inline-block;border:1px solid #94a3b8;border-radius:999px;padding:0 7px;font-size:11px;margin:1px 2px 1px 0;background:#fff}
-  .src{font-size:10px;border:1px dashed #64748b;border-radius:3px;padding:0 3px;margin-left:3px;cursor:pointer;color:#334155}
-  .src:hover{background:#e2e8f0}
-  .tl li{position:relative;padding-left:14px;margin-bottom:8px}
-  .tl li::before{content:"";position:absolute;left:0;top:6px;width:7px;height:7px;border:1px solid #475569;border-radius:50%;background:#fff}
-  .tag{font-size:10px;padding:0 5px;border-radius:3px;background:#e2e8f0;color:#334155;margin-right:4px}
-  textarea.json{font-family:ui-monospace,monospace;font-size:12px;width:100%;min-height:140px}
-  pre.json{font-size:11px;white-space:pre-wrap;word-break:break-all;background:#f8fafc;border:1px solid #e2e8f0;padding:6px;border-radius:4px;max-height:220px;overflow:auto}
-  .hidden{display:none}
+  :root{
+    --bg:#0b0f17;--bg2:#111827;--panel:#141c2b;--panel2:#1a2335;--line:#243049;--line2:#2e3b57;
+    --text:#e6ebf5;--muted:#8b97b1;--dim:#5f6b85;
+    --accent:#7c9cff;--accent2:#a78bfa;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--info:#38bdf8;
+  }
+  *{box-sizing:border-box}
+  html,body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-size:13.5px;line-height:1.45}
+  body{background:
+    radial-gradient(900px 500px at 10% -10%, rgba(124,156,255,.12), transparent 60%),
+    radial-gradient(700px 400px at 95% 0%, rgba(167,139,250,.10), transparent 60%), var(--bg)}
+  .mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0)) ,var(--panel);border:1px solid var(--line);border-radius:14px}
+  .btn{display:inline-flex;align-items:center;gap:6px;border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:600;border:1px solid var(--line2);background:var(--panel2);color:var(--text);cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn:hover{border-color:var(--accent);background:#1f2a42}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#0b0f17}
+  .btn.primary:hover{filter:brightness(1.1)}
+  .btn.sm{padding:4px 9px;font-size:11.5px;border-radius:7px}
+  .btn.ghost{background:transparent}
+  .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:600;letter-spacing:.02em;border:1px solid var(--line2);color:var(--muted);background:rgba(255,255,255,.02)}
+  .badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .badge.live{color:var(--ok);border-color:rgba(52,211,153,.35);background:rgba(52,211,153,.07)}
+  .badge.standin{color:var(--warn);border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+  .badge.livemode{color:var(--bad);border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.1)}
+  .pill{display:inline-flex;align-items:center;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;letter-spacing:.02em;border:1px solid var(--line2);color:var(--muted);white-space:nowrap}
+  .pill.T1{color:var(--ok);border-color:rgba(52,211,153,.4);background:rgba(52,211,153,.08)}
+  .pill.T2{color:var(--info);border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.08)}
+  .pill.T3{color:var(--accent);border-color:rgba(124,156,255,.4);background:rgba(124,156,255,.08)}
+  .pill.T4{color:var(--muted)}
+  .st-READY{color:var(--info);border-color:rgba(56,189,248,.4)} .st-WAITING{color:var(--accent)} .st-SCHEDULING{color:var(--accent2);border-color:rgba(167,139,250,.4)}
+  .st-BOOKED{color:#0b0f17;background:var(--ok);border-color:var(--ok)} .st-NEEDS_HUMAN{color:var(--warn);border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08)}
+  .st-SUPPRESSED,.st-HELD,.st-UNREACHABLE,.st-EXHAUSTED{color:var(--dim)}
+  .chip{display:inline-flex;align-items:center;gap:4px;border-radius:7px;padding:2px 8px;font-size:11px;background:rgba(124,156,255,.08);border:1px solid rgba(124,156,255,.22);color:#c7d2fe;margin:2px 4px 2px 0}
+  .src{font-family:"JetBrains Mono",monospace;font-size:10px;padding:0 5px;border-radius:4px;background:rgba(255,255,255,.06);border:1px solid var(--line2);color:var(--muted);cursor:pointer;transition:.15s}
+  .src:hover{color:var(--text);border-color:var(--accent);background:rgba(124,156,255,.15)}
+  .tag{font-family:"JetBrains Mono",monospace;font-size:10px;padding:1px 6px;border-radius:4px;background:rgba(255,255,255,.06);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-right:6px;white-space:nowrap}
+  .tag.prospect_fact{color:var(--ok);background:rgba(52,211,153,.1)} .tag.product_fact{color:var(--info);background:rgba(56,189,248,.1)}
+  .tag.hypothesis{color:var(--accent2);background:rgba(167,139,250,.1)} .tag.cta{color:var(--warn);background:rgba(251,191,36,.1)}
+  .tag.MANDATORY{color:#0b0f17;background:var(--text)} .tag.PREFERRED{color:var(--muted)}
+  .tag.you{color:#0b0f17;background:var(--accent)} .tag.agent{color:var(--accent2);background:rgba(167,139,250,.15)}
+  table{border-collapse:separate;border-spacing:0}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);font-weight:600;padding:8px 10px;text-align:left;border-bottom:1px solid var(--line)}
+  td{padding:11px 10px;border-bottom:1px solid rgba(36,48,73,.6);vertical-align:top}
+  tr.row:hover td{background:rgba(255,255,255,.02)}
+  tr.row.featured td{background:rgba(124,156,255,.06)}
+  tr.row.featured td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+  .muted{color:var(--muted)} .dim{color:var(--dim)}
+  .tl li{position:relative;padding-left:18px;margin-bottom:11px}
+  .tl li::before{content:"";position:absolute;left:3px;top:7px;width:7px;height:7px;border-radius:50%;background:var(--line2)}
+  .tl li.k-error::before{background:var(--bad)} .tl li.k-memory::before{background:var(--accent2)} .tl li.k-suppress::before{background:var(--dim)}
+  .tl li.k-booking::before,.tl li.k-book::before,.tl li.k-meeting::before{background:var(--ok)} .tl li.k-reply::before,.tl li.k-inbox::before{background:var(--info)}
+  textarea,input,select{background:var(--bg2);border:1px solid var(--line2);border-radius:9px;color:var(--text);padding:8px 10px;font:inherit;outline:none}
+  textarea:focus,input:focus,select:focus{border-color:var(--accent)}
+  textarea.json{font-family:"JetBrains Mono",monospace;font-size:11.5px;width:100%;min-height:150px}
+  pre.json{font-family:"JetBrains Mono",monospace;font-size:11px;white-space:pre-wrap;word-break:break-all;background:var(--bg2);border:1px solid var(--line);padding:8px 10px;border-radius:8px;max-height:240px;overflow:auto;color:#c9d3ea;margin:0}
+  .hidden{display:none !important}
+  .fade{animation:fade .25s ease-out} @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--line2);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px} @keyframes sp{to{transform:rotate(360deg)}}
+  .step{display:flex;gap:12px;align-items:flex-start}
+  .stepn{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--panel2);border:1px solid var(--line2);color:var(--muted)}
+  .stepn.done{background:var(--ok);color:#0b0f17;border-color:var(--ok)} .stepn.cur{background:var(--accent);color:#0b0f17;border-color:var(--accent)}
+  ::-webkit-scrollbar{width:8px;height:8px} ::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
+  a{color:inherit}
+  #drawer{box-shadow:-20px 0 60px rgba(0,0,0,.5)}
+  .ev-grid{display:grid;grid-template-columns:90px 1fr;gap:6px 10px}
+  .num{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1}
 </style>
 </head>
-<body class="bg-white text-slate-900 text-sm">
+<body>
 
-<!-- top bar -->
-<div class="flex items-center gap-3 px-5 py-3 border-b border-slate-200 flex-wrap">
-  <div id="title" class="text-lg font-semibold">Kingslayers · Sales Agent</div>
-  <span class="pill font-semibold">LIVE DATA · Crustdata</span>
-  <span id="modeBadge" class="pill bg-amber-100 border-amber-400 text-amber-900">STAND-IN</span>
-  <span id="ranAt" class="pill text-slate-600"></span>
-  <span class="pill text-slate-600">Demo send window: any time</span>
-  <div class="ml-auto flex gap-2">
-    <select id="campaignSelect" class="border border-slate-300 rounded px-2 py-1 text-xs"></select>
-    <button id="newBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold">+ New campaign</button>
-    <button id="pauseBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold">■ Pause campaign</button>
-  </div>
-</div>
-
-<div id="err" class="hidden mx-5 mt-2 text-red-700 bg-red-50 border border-red-300 rounded px-3 py-1 text-xs"></div>
-
-<!-- setup panel -->
-<div id="setup" class="mx-5 my-4 border border-slate-300 rounded p-4 max-w-3xl">
-  <div class="font-semibold mb-2">1 · Product</div>
-  <textarea id="productText" class="w-full border border-slate-300 rounded p-2 text-sm" rows="3">TalentFlow: an AI tool that screens applicants and coordinates recruitment pipelines for medium and large employers in India (200+ employees). Helps talent-acquisition teams cut time-to-hire when hiring volume spikes.</textarea>
-  <div class="flex gap-2 mt-2 items-center">
-    <input id="campaignName" class="border border-slate-300 rounded px-2 py-1 text-sm" value="TalentFlow · India outbound">
-    <button id="createBtn" class="bg-slate-900 text-white rounded px-3 py-1 text-xs font-semibold">Create campaign</button>
-  </div>
-
-  <div id="icpBlock" class="hidden mt-5">
-    <div class="font-semibold mb-2">2 · Profile and ICP <span class="text-slate-500 font-normal">(from Seller Memory)</span></div>
-    <div class="flex gap-2 mb-2">
-      <button id="genIcpBtn" class="bg-slate-900 text-white rounded px-3 py-1 text-xs font-semibold">Generate ICP</button>
-      <button id="approveBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold hidden">Approve</button>
-      <button id="regenBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold hidden">Regenerate</button>
-      <button id="editIcpBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold hidden">Edit in Memory</button>
-      <span id="icpSpin" class="hidden text-slate-500 text-xs self-center">Thinking…</span>
+<!-- ====== top bar ====== -->
+<header class="sticky top-0 z-20 border-b border-[var(--line)] backdrop-blur" style="background:rgba(11,15,23,.85)">
+  <div class="flex items-center gap-3 px-6 py-3 flex-wrap">
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded-lg grid place-items-center font-bold text-[13px]" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0b0f17">K</div>
+      <div>
+        <div id="title" class="font-semibold text-[15px] leading-tight">Kingslayers · Sales Agent</div>
+        <div class="text-[11px] dim leading-tight">every claim has a receipt</div>
+      </div>
     </div>
-    <div id="icpView" class="grid grid-cols-2 gap-4 text-xs"></div>
+    <div class="h-6 w-px bg-[var(--line)] mx-1"></div>
+    <span class="badge live"><span class="dot"></span>LIVE DATA · Crustdata</span>
+    <span id="modeBadge" class="badge standin"><span class="dot"></span>STAND-IN</span>
+    <span id="ranAt" class="badge"></span>
+    <span class="badge dim">send window: any time</span>
+    <div class="ml-auto flex gap-2 items-center">
+      <select id="campaignSelect" class="text-xs py-1.5"></select>
+      <button id="newBtn" class="btn">+ New campaign</button>
+      <button id="pauseBtn" class="btn">■ Pause</button>
+    </div>
+  </div>
+</header>
+
+<div id="hint" class="mx-6 mt-3 rounded-lg px-4 py-2.5 text-[13px] flex items-center gap-3 fade" style="background:rgba(124,156,255,.08);border:1px solid rgba(124,156,255,.3)"></div>
+<div id="err" class="hidden fade mx-6 mt-3 rounded-lg px-3 py-2 text-xs" style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:#fecaca"></div>
+
+<!-- ====== setup ====== -->
+<div id="setup" class="mx-auto my-8 max-w-4xl px-6 fade">
+  <div class="mb-6">
+    <div class="text-[22px] font-bold tracking-tight">Start a campaign</div>
+    <div class="muted">Describe the product. The agent builds the ICP, finds real buyers on live Crustdata, and drafts emails with receipts.</div>
   </div>
 
-  <div id="discoverBlock" class="hidden mt-5">
-    <div class="font-semibold mb-2">3 · Discovery</div>
-    <button id="discoverBtn" class="bg-slate-900 text-white rounded px-3 py-1 text-xs font-semibold">Run discovery on live Crustdata</button>
-    <span id="discSpin" class="hidden text-slate-500 text-xs ml-2">Discovering… watch the journal →</span>
+  <div class="card p-5 mb-4">
+    <div class="step">
+      <div id="s1n" class="stepn cur">1</div>
+      <div class="flex-1">
+        <div class="font-semibold mb-1">Product</div>
+        <textarea id="productText" class="w-full" rows="3">TalentFlow: an AI tool that screens applicants and coordinates recruitment pipelines for medium and large employers in India (200+ employees). Helps talent-acquisition teams cut time-to-hire when hiring volume spikes.</textarea>
+        <div class="flex gap-2 mt-3 items-center">
+          <input id="campaignName" class="text-sm w-72" value="TalentFlow · India outbound">
+          <button id="createBtn" class="btn primary">Create campaign →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="icpBlock" class="card p-5 mb-4 hidden">
+    <div class="step">
+      <div id="s2n" class="stepn">2</div>
+      <div class="flex-1">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="font-semibold">Profile &amp; ICP <span class="muted font-normal">· from Seller Memory</span></div>
+          <span id="icpSpin" class="hidden muted text-xs"><span class="spin"></span> Thinking…</span>
+          <div class="ml-auto flex gap-2">
+            <button id="genIcpBtn" class="btn primary">Generate ICP</button>
+            <button id="approveBtn" class="btn primary hidden">Approve ✓</button>
+            <button id="regenBtn" class="btn hidden">Regenerate</button>
+            <button id="editIcpBtn" class="btn ghost hidden">Edit in Memory</button>
+          </div>
+        </div>
+        <div id="icpView" class="grid grid-cols-2 gap-5 text-xs"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="discoverBlock" class="card p-5 hidden">
+    <div class="step">
+      <div id="s3n" class="stepn">3</div>
+      <div class="flex-1">
+        <div class="font-semibold mb-1">Discovery</div>
+        <div class="muted mb-3">Search live Crustdata, score every company against the ICP, find the buyer at each, verify emails, draft with the claim gate.</div>
+        <button id="discoverBtn" class="btn primary">Run discovery on live Crustdata →</button>
+        <span id="discSpin" class="hidden muted text-xs ml-2"><span class="spin"></span> Discovering… watch the journal</span>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- main two-column layout -->
-<div id="main" class="hidden grid" style="grid-template-columns: 1fr 380px; min-height: calc(100vh - 60px)">
-  <div class="px-5 py-4 border-r border-slate-200 overflow-auto">
-    <div class="text-xs font-semibold tracking-wide text-slate-600 mb-2">PIPELINE</div>
-    <div id="funnel" class="grid grid-cols-6 gap-2 mb-5"></div>
+<!-- ====== main ====== -->
+<div id="main" class="hidden grid fade" style="grid-template-columns: minmax(0,1fr) 400px; min-height: calc(100vh - 62px)">
+  <div class="px-6 py-5 min-w-0">
+    <div id="funnel" class="grid grid-cols-6 gap-3 mb-6"></div>
 
-    <div class="text-xs font-semibold tracking-wide text-slate-600 mb-1">RANKED PROSPECTS <span class="font-normal">(click any [src] to see the Crustdata record)</span></div>
-    <table class="w-full text-xs">
-      <thead class="text-slate-500 text-left border-b border-slate-200">
-        <tr><th class="py-1">#</th><th>Company</th><th>Tier</th><th>Fit</th><th>Coverage</th><th>Why now</th><th>Contact</th><th>Status</th></tr>
-      </thead>
-      <tbody id="rows"></tbody>
-    </table>
+    <div class="flex items-baseline gap-3 mb-2">
+      <div class="font-semibold text-[15px]">Ranked prospects</div>
+      <div class="dim text-xs">click any <span class="src">src</span> to see the Crustdata record behind it</div>
+    </div>
+    <div class="card overflow-hidden">
+      <table class="w-full text-[12.5px]">
+        <thead><tr><th>#</th><th>Company</th><th>Tier</th><th>Fit</th><th>Cov.</th><th>Why now</th><th>Contact</th><th>Status</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
     <div id="needsEvidence" class="mt-4"></div>
 
-    <div id="draft" class="hidden mt-6 border border-slate-300 rounded p-4"></div>
+    <div id="draft" class="hidden card p-5 mt-6 fade"></div>
   </div>
 
-  <div class="px-4 py-4 overflow-auto">
-    <div class="flex gap-3 text-xs font-semibold tracking-wide text-slate-600 mb-3">
-      <button data-tab="journal" class="tabBtn underline">AGENT JOURNAL</button>
-      <button data-tab="memory" class="tabBtn">MEMORY</button>
-      <button id="checkInboxBtn" class="ml-auto border border-slate-800 rounded px-2 py-0.5 text-slate-900">Check inbox now</button>
+  <aside class="border-l border-[var(--line)] px-5 py-5 min-w-0" style="background:rgba(17,24,39,.5)">
+    <div class="flex items-center gap-2 mb-4">
+      <button data-tab="journal" class="tabBtn btn primary">📜 Journal</button>
+      <button data-tab="memory" class="tabBtn btn">🧠 Memory &amp; decisions</button>
+      <button id="checkInboxBtn" class="btn sm ml-auto">⟳ Check inbox</button>
     </div>
     <div id="booked"></div>
     <ul id="journal" class="tl text-xs"></ul>
     <div id="memoryPanel" class="hidden text-xs"></div>
-  </div>
+  </aside>
 </div>
 
-<!-- evidence drawer -->
-<div id="drawer" class="hidden fixed top-0 right-0 h-full w-[420px] bg-white border-l border-slate-300 shadow-xl p-4 overflow-auto text-xs">
-  <div class="flex justify-between mb-2"><div class="font-semibold">Receipt · Crustdata record</div><button id="drawerClose" class="text-slate-500">✕</button></div>
+<!-- ====== company detail ====== -->
+<div id="company" class="hidden fixed inset-0 z-30 overflow-auto fade" style="background:rgba(11,15,23,.92);backdrop-filter:blur(6px)">
+  <div class="mx-auto max-w-5xl my-8 card p-6 text-[13px]" id="companyBody"></div>
+</div>
+
+<!-- ====== evidence drawer ====== -->
+<div id="drawer" class="hidden fixed top-0 right-0 h-full w-[460px] z-30 p-5 overflow-auto text-xs fade" style="background:var(--panel);border-left:1px solid var(--line2)">
+  <div class="flex items-center justify-between mb-4">
+    <div><div class="font-semibold text-sm">Receipt</div><div class="dim">raw Crustdata record behind this claim</div></div>
+    <button id="drawerClose" class="btn sm ghost">✕</button>
+  </div>
   <div id="drawerBody"></div>
 </div>
 
 <script>
 const $ = (id) => document.getElementById(id);
 let campaignId = localStorage.getItem('campaignId') || null;
-let campaign = null, companiesData = null, currentTab = 'journal', openDraftContact = null;
+let campaign = null, companiesData = null, currentTab = 'journal', openDraftContact = null, lastIcpKey = '';
 
 async function api(method, url, body) {
   const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
@@ -112,10 +215,11 @@ async function api(method, url, body) {
   if (!r.ok) throw new Error((data && data.detail) || text || r.statusText);
   return data;
 }
-function showErr(e) { $('err').textContent = String(e.message || e); $('err').classList.remove('hidden'); setTimeout(() => $('err').classList.add('hidden'), 8000); }
+function showErr(e) { $('err').textContent = String(e.message || e); $('err').classList.remove('hidden'); setTimeout(() => $('err').classList.add('hidden'), 9000); }
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmtT = (iso) => iso ? new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) : '';
 const fmtDT = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST' : '';
+const n = (x) => x == null ? '—' : Number(x).toLocaleString('en-IN');
 
 // ---------- campaigns ----------
 async function loadCampaignList() {
@@ -125,8 +229,8 @@ async function loadCampaignList() {
   if (!campaignId && list.length) campaignId = list[0].id;
   if (campaignId) sel.value = campaignId;
 }
-$('campaignSelect').onchange = (e) => { campaignId = e.target.value; localStorage.setItem('campaignId', campaignId); openDraftContact = null; refresh(); };
-$('newBtn').onclick = () => { campaignId = null; localStorage.removeItem('campaignId'); campaign = null; render(); };
+$('campaignSelect').onchange = (e) => { campaignId = e.target.value; localStorage.setItem('campaignId', campaignId); openDraftContact = null; $('draft').classList.add('hidden'); refresh(); };
+$('newBtn').onclick = () => { campaignId = null; localStorage.removeItem('campaignId'); campaign = null; companiesData = null; render(); };
 
 $('createBtn').onclick = async () => {
   try {
@@ -137,11 +241,11 @@ $('createBtn').onclick = async () => {
 };
 $('genIcpBtn').onclick = $('regenBtn').onclick = async () => {
   $('icpSpin').classList.remove('hidden');
-  try { await api('POST', `/api/campaigns/${campaignId}/icp`); await refresh(); } catch (e) { showErr(e); }
+  try { await api('POST', `/api/campaigns/${campaignId}/icp`); lastIcpKey = ''; await refresh(); } catch (e) { showErr(e); }
   $('icpSpin').classList.add('hidden');
 };
-$('approveBtn').onclick = async () => { try { await api('POST', `/api/campaigns/${campaignId}/icp/approve`); await refresh(); } catch (e) { showErr(e); } };
-$('editIcpBtn').onclick = () => { setTab('memory'); };
+$('approveBtn').onclick = async () => { try { await api('POST', `/api/campaigns/${campaignId}/icp/approve`); lastIcpKey = ''; await refresh(); } catch (e) { showErr(e); } };
+$('editIcpBtn').onclick = () => { $('main').classList.remove('hidden'); setTab('memory'); window.scrollTo({ top: 0 }); };
 $('discoverBtn').onclick = async () => {
   try { await api('POST', `/api/campaigns/${campaignId}/discover`); $('discSpin').classList.remove('hidden'); await refresh(); } catch (e) { showErr(e); }
 };
@@ -150,14 +254,14 @@ $('pauseBtn').onclick = async () => {
   try { await api('POST', `/api/campaigns/${campaignId}/${campaign.paused ? 'resume' : 'pause'}`); await refresh(); } catch (e) { showErr(e); }
 };
 $('checkInboxBtn').onclick = async () => {
-  $('checkInboxBtn').textContent = 'Checking…';
-  try { const r = await api('POST', '/api/inbox/check'); await refresh(); $('checkInboxBtn').textContent = `Check inbox now (${r.processed} new)`; }
-  catch (e) { showErr(e); $('checkInboxBtn').textContent = 'Check inbox now'; }
+  $('checkInboxBtn').innerHTML = '<span class="spin"></span> Checking…';
+  try { const r = await api('POST', '/api/inbox/check'); await refresh(); $('checkInboxBtn').textContent = `⟳ Check inbox now · ${r.processed} new`; }
+  catch (e) { showErr(e); $('checkInboxBtn').textContent = '⟳ Check inbox now'; }
 };
 document.querySelectorAll('.tabBtn').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 function setTab(t) {
   currentTab = t;
-  document.querySelectorAll('.tabBtn').forEach(b => b.classList.toggle('underline', b.dataset.tab === t));
+  document.querySelectorAll('.tabBtn').forEach(b => b.classList.toggle('primary', b.dataset.tab === t));
   $('journal').classList.toggle('hidden', t !== 'journal');
   $('booked').classList.toggle('hidden', t !== 'journal');
   $('memoryPanel').classList.toggle('hidden', t !== 'memory');
@@ -183,29 +287,53 @@ async function refresh() {
 
 function render() {
   const c = campaign;
-  $('setup').classList.toggle('hidden', !!(c && c.status !== 'DRAFT' && c.status !== 'DISCOVERING' && c.status !== 'FAILED'));
-  $('main').classList.toggle('hidden', !(c && ['READY', 'RUNNING', 'DONE', 'DISCOVERING'].includes(c.status)));
-  if (!c) { $('icpBlock').classList.add('hidden'); $('discoverBlock').classList.add('hidden'); $('title').textContent = 'Kingslayers · Sales Agent'; return; }
+  const inSetup = !c || ['DRAFT', 'FAILED'].includes(c.status) || (c.status === 'DISCOVERING' && !(c.funnel && c.funnel.discovered));
+  $('setup').classList.toggle('hidden', !inSetup);
+  $('main').classList.toggle('hidden', inSetup);
+  if (!c) { $('icpBlock').classList.add('hidden'); $('discoverBlock').classList.add('hidden'); $('title').textContent = 'Kingslayers · Sales Agent'; $('s1n').className = 'stepn cur'; return; }
   $('title').textContent = c.name;
-  $('modeBadge').textContent = c.delivery_mode === 'LIVE' ? 'LIVE: real prospects' : `STAND-IN: sends go to ${c.stand_in_masked}`;
-  $('modeBadge').className = 'pill ' + (c.delivery_mode === 'LIVE' ? 'bg-red-100 border-red-500 text-red-900 font-semibold' : 'bg-amber-100 border-amber-400 text-amber-900');
-  $('ranAt').textContent = c.discovery_ran_at ? `Discovery ran at ${fmtT(c.discovery_ran_at)} on live Crustdata` : 'Discovery not run yet';
-  $('pauseBtn').textContent = c.paused ? '▶ Resume campaign' : '■ Pause campaign';
+  const live = c.delivery_mode === 'LIVE';
+  $('modeBadge').innerHTML = `<span class="dot"></span>${live ? 'LIVE · real prospects' : `STAND-IN · sends go to ${esc(c.stand_in_masked)}`}`;
+  $('modeBadge').className = 'badge ' + (live ? 'livemode' : 'standin');
+  $('ranAt').textContent = c.discovery_ran_at ? `discovery ran ${fmtT(c.discovery_ran_at)} on live Crustdata` : 'discovery not run yet';
+  $('pauseBtn').textContent = c.paused ? '▶ Resume' : '■ Pause';
+  $('pauseBtn').style.borderColor = c.paused ? 'var(--warn)' : '';
+  $('s1n').className = 'stepn done'; $('s1n').textContent = '✓';
   $('icpBlock').classList.remove('hidden');
+  $('s2n').className = 'stepn ' + (c.icp_approved ? 'done' : 'cur'); $('s2n').textContent = c.icp_approved ? '✓' : '2';
+  $('s3n').className = 'stepn ' + (c.icp_approved ? 'cur' : '');
   $('discSpin').classList.toggle('hidden', c.status !== 'DISCOVERING');
   renderIcp();
   $('discoverBlock').classList.toggle('hidden', !c.icp_approved);
   const f = c.funnel;
   const short = f.qualified < f.target && c.discovery_ran_at;
-  $('funnel').innerHTML = [
-    ['Discovered', f.discovered, ''],
+  const cells = [
+    ['Discovered', f.discovered, 'companies on live Crustdata'],
     ['Qualified', f.qualified, short ? `${f.target} target · ${f.qualified} qualified` : `${f.target} target`],
-    ['Contacts', f.contacts, `${f.verified} w/ verified email`],
-    ['Emailed', f.emailed, `Drafted ${f.drafted} (${f.held} held)`],
+    ['Contacts', f.contacts, `${f.verified} with verified email`],
+    ['Emailed', f.emailed, `drafted ${f.drafted} · ${f.held} held`],
     ['Replied', f.replied, ''],
-    ['Booked', f.booked, ''],
-  ].map(([l, n, sub], i) => `<div class="border ${i === 5 ? 'border-slate-900 border-2' : 'border-slate-300'} rounded p-2 text-center"><div class="text-xl font-semibold">${n}</div><div class="text-xs">${l}</div><div class="text-[10px] text-slate-500">${esc(sub)}</div></div>`).join('');
+    ['Booked', f.booked, f.booked ? 'calendar event + Meet' : ''],
+  ];
+  $('funnel').innerHTML = cells.map(([l, v, sub], i) => `
+    <div class="card p-3.5 ${i === 5 && v ? 'ring-1' : ''}" style="${i === 5 && v ? 'border-color:var(--ok);box-shadow:0 0 0 1px var(--ok) inset' : ''}">
+      <div class="num ${i === 5 && v ? '' : ''}" style="${i === 5 && v ? 'color:var(--ok)' : ''}">${v}</div>
+      <div class="text-[11.5px] font-semibold mt-1.5">${l}</div>
+      <div class="text-[10.5px] dim truncate">${esc(sub)}&nbsp;</div>
+    </div>`).join('');
   renderTable();
+  renderHint();
+}
+
+function renderHint() {
+  const c = campaign; const h = $('hint');
+  if (!c) { h.innerHTML = '<b>Step 1</b> Describe your product below and click <b>Create campaign</b>.'; return; }
+  if (!c.icp_approved) { h.innerHTML = '<b>Step 2</b> Click <b>Generate ICP</b>, review it, then <b>Approve</b>. Want changes? <b>Edit in Memory</b>.'; return; }
+  if (!c.discovery_ran_at) { h.innerHTML = '<b>Step 3</b> Click <b>Run discovery</b>. Live Crustdata search, scoring, contacts, verified emails, drafts.'; return; }
+  const f = c.funnel;
+  if (f.booked) { h.innerHTML = '<b>Done</b> Meeting booked. Open <b>Memory &amp; decisions</b> to see every call the agent made and why.'; return; }
+  if (f.replied || f.emailed) { h.innerHTML = '<b>Step 5</b> Waiting on the reply. Click <b>Check inbox</b> after they answer. Unclear replies show up as <b>Needs you</b> in the journal.'; return; }
+  h.innerHTML = '<b>Step 4</b> Click any <span class="src">src</span> for the receipt. Click the <span style="color:var(--warn)">★</span> contact to open the draft, then <b>Send</b>. Tweak voice/rules in <b>Memory</b> and <b>Regenerate</b>.';
 }
 
 async function renderIcp() {
@@ -220,18 +348,25 @@ async function renderIcp() {
     $('editIcpBtn').classList.toggle('hidden', !has);
     $('genIcpBtn').classList.toggle('hidden', has);
     if (!has) { $('icpView').innerHTML = ''; return; }
+    const key = prof.version + ':' + icp.version + ':' + campaign.icp_approved;
+    if (key === lastIcpKey) return; lastIcpKey = key;
     const p = prof.value, ic = icp.value;
     const checkable = ['country', 'headcount', 'industry', 'open_roles', 'headcount_growth_12m'];
     $('icpView').innerHTML = `
-      <div><div class="font-semibold mb-1">Product profile ${prof.locked ? '🔒' : ''}</div>
-        <div><b>${esc(p.name)}</b> · ${esc(p.category)}</div>
-        <div class="text-slate-700 mt-1">${esc(p.value_proposition)}</div>
-        <div class="mt-1"><span class="tag">capabilities</span>${(p.capabilities || []).map(esc).join(' · ')}</div>
-        <div class="mt-1"><span class="tag">buyers</span>${(p.target_departments || []).map(esc).join(' · ')}</div></div>
-      <div><div class="font-semibold mb-1">ICP ${icp.locked ? '🔒' : ''} ${campaign.icp_approved ? '<span class="pill bg-green-50 border-green-500">approved</span>' : ''}</div>
-        <div class="text-slate-700 italic">“${esc(ic.nl_query)}”</div>
-        <ul class="mt-1">${(ic.constraints || []).map(k => `<li><span class="tag ${k.type === 'MANDATORY' ? 'bg-slate-900 text-white' : ''}">${k.type}</span>${esc(k.field)} ${esc(k.operator)} ${esc(JSON.stringify(k.expected))} <span class="text-slate-500">w${k.weight}</span>${checkable.includes(k.field) ? '' : ' <span class="tag bg-amber-100">not machine-checkable</span>'}</li>`).join('')}</ul>
-        <div class="mt-1"><span class="tag">titles</span>${(ic.person_titles || []).map(esc).join(' · ')}</div></div>`;
+      <div class="card p-4" style="background:var(--bg2)">
+        <div class="font-semibold mb-2 flex items-center gap-2">Product profile ${prof.locked ? '<span class="pill">🔒 edited by you</span>' : ''}</div>
+        <div class="text-sm font-semibold">${esc(p.name)}</div>
+        <div class="muted mb-2">${esc(p.category)}</div>
+        <div class="mb-2">${esc(p.value_proposition)}</div>
+        <div class="mb-1"><span class="tag">capabilities</span>${(p.capabilities || []).map(x => `<span class="chip">${esc(x)}</span>`).join('')}</div>
+        <div><span class="tag">buyers</span>${(p.target_departments || []).map(x => `<span class="chip">${esc(x)}</span>`).join('')}</div>
+      </div>
+      <div class="card p-4" style="background:var(--bg2)">
+        <div class="font-semibold mb-2 flex items-center gap-2">Ideal customer ${icp.locked ? '<span class="pill">🔒 edited by you</span>' : ''} ${campaign.icp_approved ? '<span class="pill T1">approved</span>' : ''}</div>
+        <div class="muted italic mb-2">“${esc(ic.nl_query)}”</div>
+        <ul class="space-y-1">${(ic.constraints || []).map(k => `<li class="flex items-start gap-1 flex-wrap"><span class="tag ${k.type}">${k.type === 'MANDATORY' ? 'must' : 'prefer'}</span><span class="mono">${esc(k.field)}</span><span class="dim">${esc(k.operator)}</span><span>${esc(Array.isArray(k.expected) ? k.expected.slice(0, 3).join(', ') + (k.expected.length > 3 ? '…' : '') : JSON.stringify(k.expected))}</span><span class="dim">w${k.weight}</span>${checkable.includes(k.field) ? '' : '<span class="pill" style="color:var(--warn)">not machine-checkable</span>'}</li>`).join('')}</ul>
+        <div class="mt-2"><span class="tag">titles</span>${(ic.person_titles || []).slice(0, 5).map(x => `<span class="chip">${esc(x)}</span>`).join('')}</div>
+      </div>`;
   } catch (e) { /* P2 not pushed yet */ }
 }
 
@@ -240,36 +375,108 @@ function renderTable() {
   const rows = companiesData.ranked;
   $('rows').innerHTML = rows.map((co, i) => {
     const ct = co.contacts[0];
-    const why = (co.why_now || []).map(w => `<span class="chip">${esc(w.label)}</span><span class="src" data-ev="${w.evidence_id}">src</span>`).join(' ') || '<span class="chip">—</span>';
-    const contact = ct ? `<div class="${ct.featured ? 'font-semibold' : ''}">${ct.featured ? '⭐ ' : ''}<a href="#" class="underline" data-contact="${ct.id}">${esc(ct.name)}</a>, ${esc(ct.title)}</div><div class="text-slate-500">${esc(ct.role)} · ${ct.email_verified ? 'email verified ✓' : 'no email → manual task'}</div>` : '<span class="text-slate-400">no contact</span>';
-    const status = ct ? statusPill(ct) : '';
-    return `<tr class="border-b border-slate-100 align-top">
-      <td class="py-2">${co.rank ?? i + 1}</td>
-      <td><b>${esc(co.name)}</b><div class="text-slate-500">${esc(co.industry || '')} · ${co.headcount ?? '?'} emp · ${esc(co.city || co.country || '')}</div></td>
-      <td>${co.tier}</td><td>${co.fit == null ? '—' : Math.round(co.fit) + '%'}</td><td>${Math.round(co.coverage)}%</td>
-      <td>${why}</td><td>${contact}</td><td>${status}</td></tr>`;
+    const why = (co.why_now || []).map(w => `<span class="chip">${esc(w.label)} <span class="src" data-ev="${w.evidence_id}">src</span></span>`).join('') || '<span class="dim">—</span>';
+    const contact = ct
+      ? `<div class="font-medium">${ct.featured ? '<span title="featured" style="color:var(--warn)">★</span> ' : ''}<a href="#" class="hover:underline" data-contact="${ct.id}">${esc(ct.name)}</a></div>
+         <div class="dim truncate" style="max-width:220px">${esc(ct.title)}</div>
+         <div class="text-[11px] mt-0.5">${ct.role !== 'OTHER' ? `<span class="tag">${ct.role.replace('_', ' ')}</span>` : ''}${ct.email_verified ? '<span style="color:var(--ok)">✓ email verified</span>' : '<span class="dim">no email · manual task</span>'}</div>`
+      : '<span class="dim">—</span>';
+    return `<tr class="row ${ct && ct.featured ? 'featured' : ''}">
+      <td class="dim mono">${co.rank ?? i + 1}</td>
+      <td><div class="font-semibold"><a href="#" class="hover:underline" data-company="${co.id}">${esc(co.name)}</a> <span class="dim text-[10px]">↗ details</span></div><div class="dim text-[11px]">${esc(co.industry || '')} · ${n(co.headcount)} emp${co.city || co.country ? ' · ' + esc(co.city || co.country) : ''}</div></td>
+      <td><span class="pill ${co.tier}">${co.tier}</span></td>
+      <td class="mono">${co.fit == null ? '<span class="dim">—</span>' : Math.round(co.fit) + '%'}</td>
+      <td class="mono muted">${Math.round(co.coverage)}%</td>
+      <td style="max-width:260px">${why}</td>
+      <td>${contact}</td>
+      <td>${ct ? `<span class="pill st-${ct.state}">${ct.state.replace('_', ' ')}</span>` : ''}</td></tr>`;
   }).join('');
   const ne = companiesData.needs_evidence;
-  $('needsEvidence').innerHTML = ne.length ? `<div class="text-xs font-semibold text-slate-600 mb-1">NEEDS EVIDENCE (mandatory criterion unknown; never contacted)</div>` + ne.map(co => `<span class="chip">${esc(co.name)}</span>`).join(' ') : '';
-  document.querySelectorAll('[data-ev]').forEach(el => el.onclick = () => openEvidence(el.dataset.ev));
-  document.querySelectorAll('[data-contact]').forEach(el => el.onclick = (e) => { e.preventDefault(); loadDraft(el.dataset.contact); });
+  $('needsEvidence').innerHTML = ne.length ? `<div class="card p-3"><div class="text-[11px] uppercase tracking-wide dim mb-1">Needs evidence · a mandatory criterion is unknown, never contacted</div>${ne.map(co => `<span class="chip">${esc(co.name)}</span>`).join('')}</div>` : '';
+  bindDynamic($('rows'));
 }
-function statusPill(ct) {
-  const map = { BOOKED: 'border-slate-900 font-semibold', SUPPRESSED: 'text-slate-500', NEEDS_HUMAN: 'bg-amber-50 border-amber-400', SCHEDULING: 'bg-blue-50', WAITING: '', HELD: 'text-slate-400', UNREACHABLE: 'text-slate-400' };
-  return `<span class="pill ${map[ct.state] || ''}">${ct.state}</span>`;
+function bindDynamic(root) {
+  root.querySelectorAll('[data-ev]').forEach(el => el.onclick = (e) => { e.preventDefault(); e.stopPropagation(); openEvidence(el.dataset.ev); });
+  root.querySelectorAll('[data-contact]').forEach(el => el.onclick = (e) => { e.preventDefault(); loadDraft(el.dataset.contact); });
+  root.querySelectorAll('[data-company]').forEach(el => el.onclick = (e) => { e.preventDefault(); openCompany(el.dataset.company); });
 }
+
+// ---------- company detail ----------
+async function openCompany(id) {
+  try {
+    const c = await api('GET', `/api/companies/${id}`);
+    const ev = Object.fromEntries(c.evidence.map(e => [e.id, e]));
+    const link = (u, label) => u ? `<a class="underline" style="color:var(--accent)" target="_blank" href="${esc(u)}">${esc(label || u.replace(/^https?:\/\//, ''))}</a>` : '<span class="dim">—</span>';
+    const verdictColor = { PASS: 'var(--ok)', FAIL: 'var(--bad)', UNKNOWN: 'var(--warn)' };
+    const crit = c.criteria.map(k => `<tr><td class="mono">${esc(k.field)}</td><td><span class="tag ${k.type}">${k.type === 'MANDATORY' ? 'must' : 'prefer'}</span></td><td style="color:${verdictColor[k.verdict] || 'inherit'}" class="font-semibold">${esc(k.verdict)}</td><td>${esc(k.observed == null ? '—' : String(k.observed))}</td><td>${k.evidence_id ? `<span class="src" data-ev="${k.evidence_id}">src</span>` : ''}</td></tr>`).join('');
+    const contacts = c.contacts.map(ct => {
+      const drafts = ct.messages.filter(m => m.direction === 'out');
+      const inbound = ct.messages.filter(m => m.direction === 'in');
+      return `<div class="card p-4 mt-3" style="background:var(--bg2)">
+        <div class="flex items-center gap-2 flex-wrap">
+          <div class="font-semibold text-[15px]">${ct.featured ? '<span style="color:var(--warn)">★</span> ' : ''}${esc(ct.name)}</div>
+          <span class="dim">${esc(ct.title)}</span>
+          ${ct.role !== 'OTHER' ? `<span class="tag">${ct.role.replace('_', ' ')}</span>` : ''}
+          <span class="pill st-${ct.state}">${ct.state.replace('_', ' ')}</span>
+          <span class="ml-auto">${link(ct.linkedin_url, 'LinkedIn profile ↗')}</span>
+        </div>
+        <div class="mt-2"><span class="tag">how to reach</span>${ct.email_verified ? '<span style="color:var(--ok)">✓ verified business email</span> · ' : ''}${esc(ct.reach)}</div>
+        ${ct.meeting ? `<div class="mt-1"><span class="tag">meeting</span>${esc(ct.meeting.status)} ${ct.meeting.start_at ? fmtDT(ct.meeting.start_at) : ''} ${ct.meeting.meet_link ? link(ct.meeting.meet_link, 'Meet link') : ''}</div>` : ''}
+        ${drafts.length ? `<div class="mt-3"><div class="text-[10.5px] uppercase tracking-wider dim mb-1">Cold email${drafts.length > 1 ? 's' : ''} ${drafts[0].gate_status ? `· claim gate ${drafts[0].gate_status}` : ''}</div>${drafts.map(m => `<div class="mb-2"><div class="font-medium">${esc(m.kind)} · <span class="pill st-${m.status}">${m.status}</span> ${m.sent_at ? '<span class="dim">sent ' + fmtDT(m.sent_at) + '</span>' : ''}</div><div class="dim">Subject: ${esc(m.subject || '')}</div><pre class="json mt-1" style="white-space:pre-wrap;max-height:none">${esc(m.body)}</pre></div>`).join('')}</div>` : '<div class="dim mt-2">No draft (no verified email).</div>'}
+        ${inbound.length ? `<div class="mt-3"><div class="text-[10.5px] uppercase tracking-wider dim mb-1">Replies</div>${inbound.map(m => `<pre class="json" style="white-space:pre-wrap">${esc(m.body)}</pre>`).join('')}</div>` : ''}
+        <div class="mt-3"><button class="btn sm" data-contact="${ct.id}" onclick="$('company').classList.add('hidden')">Open draft panel →</button></div>
+      </div>`;
+    }).join('');
+    const strategy = c.why_now.length
+      ? `Lead with the timing signal: <b>${esc(c.why_now[0].label)}</b>${c.why_now[1] ? ' and <b>' + esc(c.why_now[1].label) + '</b>' : ''}. Frame the product around the pain this creates, ask for 20 minutes, no pitch deck. ${c.contacts[0] && c.contacts[0].role === 'CHAMPION' ? 'The contact is a likely champion: speak to their daily workload, not budget.' : c.contacts[0] && c.contacts[0].role === 'ECONOMIC_BUYER' ? 'The contact owns budget: speak to cost of slow hiring and time-to-hire.' : ''}`
+      : 'No fresh timing signal; this account is a fit on profile only. Lower priority for cold outreach.';
+    $('companyBody').innerHTML = `
+      <div class="flex items-start gap-3 mb-4">
+        <div>
+          <div class="text-[22px] font-bold tracking-tight">${esc(c.name)} <span class="pill ${c.tier} align-middle">${c.tier}</span></div>
+          <div class="muted">${esc(c.industry || '')} · ${n(c.headcount)} employees${c.headcount_growth_12m != null ? ' · ' + (c.headcount_growth_12m >= 0 ? '+' : '') + Math.round(c.headcount_growth_12m) + '% in 12m' : ''} · ${esc(c.city || c.country || '')}</div>
+          <div class="mt-1 flex gap-3 flex-wrap">${link(c.website, 'Website ↗')} ${link(c.linkedin_url, 'LinkedIn ↗')} <span class="dim mono">crustdata #${esc(c.crustdata_id)}</span></div>
+        </div>
+        <button class="btn sm ghost ml-auto" onclick="$('company').classList.add('hidden')">✕ close</button>
+      </div>
+      ${c.description ? `<div class="card p-3 mb-4" style="background:var(--bg2)"><div class="text-[10.5px] uppercase tracking-wider dim mb-1">About</div>${esc(c.description)}</div>` : ''}
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="card p-3" style="background:var(--bg2)"><div class="dim text-[11px]">Fit</div><div class="num">${c.fit == null ? '—' : Math.round(c.fit) + '%'}</div></div>
+        <div class="card p-3" style="background:var(--bg2)"><div class="dim text-[11px]">Evidence coverage</div><div class="num">${Math.round(c.coverage)}%</div></div>
+        <div class="card p-3" style="background:var(--bg2)"><div class="dim text-[11px]">Rank</div><div class="num">#${c.rank ?? '—'}</div></div>
+      </div>
+      <div class="card p-3 mb-4" style="background:rgba(124,156,255,.07);border-color:rgba(124,156,255,.3)"><div class="text-[10.5px] uppercase tracking-wider dim mb-1">Campaign strategy</div>${strategy}</div>
+      <div class="text-[10.5px] uppercase tracking-wider dim mb-1">Why now · timing signals</div>
+      <div class="mb-4">${c.why_now.map(w => `<span class="chip">${esc(w.label)} <span class="src" data-ev="${w.evidence_id}">src</span></span>`).join('') || '<span class="dim">none</span>'}</div>
+      <div class="text-[10.5px] uppercase tracking-wider dim mb-1">ICP criteria · every verdict has a receipt</div>
+      <div class="card overflow-hidden mb-4" style="background:var(--bg2)"><table class="w-full text-xs"><thead><tr><th>field</th><th>type</th><th>verdict</th><th>observed</th><th></th></tr></thead><tbody>${crit}</tbody></table></div>
+      <div class="text-[10.5px] uppercase tracking-wider dim mb-1">Contacts · who to reach and how</div>
+      ${contacts || '<div class="dim">No contacts searched for this company (outside the target count).</div>'}
+      <details class="mt-4"><summary class="dim cursor-pointer">Raw Crustdata company record</summary><pre class="json mt-2" style="max-height:400px">${esc(JSON.stringify(c.raw, null, 2))}</pre></details>`;
+    $('company').classList.remove('hidden');
+    bindDynamic($('companyBody'));
+  } catch (e) { showErr(e); }
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('company').classList.add('hidden'); });
 
 // ---------- evidence drawer ----------
 async function openEvidence(id) {
   try {
     const e = await api('GET', `/api/evidence/${id}`);
-    $('drawerBody').innerHTML = `<div><b>Endpoint</b> ${esc(e.endpoint)}</div><div><b>Field</b> ${esc(e.field_path)}</div><div><b>Value</b> ${esc(e.value)}</div>
-      ${e.source_url ? `<div><b>Source</b> <a class="underline" target="_blank" href="${esc(e.source_url)}">${esc(e.source_url)}</a></div>` : ''}
-      <div><b>Retrieved</b> ${fmtDT(e.retrieved_at)}</div><div class="mt-2 font-semibold">Raw record</div><pre class="json">${esc(JSON.stringify(e.raw_excerpt, null, 2))}</pre>`;
+    $('drawerBody').innerHTML = `
+      <div class="ev-grid mb-3">
+        <div class="dim">endpoint</div><div class="mono">${esc(e.endpoint)}</div>
+        <div class="dim">field</div><div class="mono">${esc(e.field_path)}</div>
+        <div class="dim">value</div><div class="font-semibold">${esc(e.value)}</div>
+        ${e.source_url ? `<div class="dim">source</div><div><a class="underline" style="color:var(--accent)" target="_blank" href="${esc(e.source_url)}">${esc(e.source_url.replace(/^https?:\/\//, '').slice(0, 60))}</a></div>` : ''}
+        <div class="dim">retrieved</div><div>${fmtDT(e.retrieved_at)}</div>
+      </div>
+      <div class="dim mb-1">raw record</div><pre class="json">${esc(JSON.stringify(e.raw_excerpt, null, 2))}</pre>`;
     $('drawer').classList.remove('hidden');
   } catch (e) { showErr(e); }
 }
 $('drawerClose').onclick = () => $('drawer').classList.add('hidden');
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('drawer').classList.add('hidden'); });
 
 // ---------- draft panel ----------
 async function loadDraft(contactId, silent) {
@@ -280,25 +487,35 @@ async function loadDraft(contactId, silent) {
     const canSend = ct.featured && d.gate_status === 'PASS' && d.status === 'DRAFT';
     const sent = d.status === 'SENT';
     $('draft').innerHTML = `
-      <div class="flex items-center gap-2 mb-2"><div class="font-semibold">Draft · ${esc(ct.name)}</div>
-        <span class="pill ${d.gate_status === 'PASS' ? 'bg-green-50 border-green-500' : 'bg-amber-50 border-amber-400'}">gate: ${d.gate_status || '?'}</span>
-        <span class="pill">${d.status}</span>
-        ${!ct.featured && !sent ? `<button id="starBtn" class="pill border-slate-800">☆ make featured</button>` : ''}
-        <button id="sendBtn" class="ml-auto bg-slate-900 text-white rounded px-3 py-1 text-xs font-semibold" ${canSend ? '' : 'disabled style="opacity:.4"'}>${sent ? 'Sent ✓' : 'Send'}</button>
-        <button id="draftClose" class="text-slate-500">✕</button></div>
-      <div class="mb-2"><b>Subject:</b> ${esc(d.subject)}</div>
-      <ol class="text-xs">${d.sentences.map(s => `<li class="mb-1"><span class="tag">${s.type}</span>${esc(s.text)}
-        ${(s.cited || []).map(c => `<span class="text-slate-500">← ${esc(c.field_path)}: ${esc(c.value)}</span><span class="src" data-ev="${c.evidence_id}">src</span>`).join(' ')}
-        ${s.profile_value != null ? `<span class="text-slate-500">← profile.${esc(s.profile_field)}: ${esc(JSON.stringify(s.profile_value))}</span>` : ''}</li>`).join('')}</ol>
-      ${d.gate_notes.length ? `<div class="text-amber-800 text-xs mt-1">${d.gate_notes.map(esc).join('<br>')}</div>` : ''}
-      <details class="mt-2 text-xs"><summary class="cursor-pointer text-slate-500">Full body as sent</summary><pre class="whitespace-pre-wrap">${esc(d.body)}</pre></details>`;
+      <div class="flex items-center gap-2 mb-3 flex-wrap">
+        <div><div class="font-semibold text-[15px]">Draft · ${esc(ct.name)}</div><div class="dim">${esc(ct.title)}</div></div>
+        <span class="pill ${d.gate_status === 'PASS' ? 'T1' : 'st-NEEDS_HUMAN'}">claim gate: ${d.gate_status || '?'}</span>
+        <span class="pill st-${d.status}">${d.status}</span>
+        ${!ct.featured && !sent ? `<button id="starBtn" class="btn sm">☆ make featured</button>` : ''}
+        <div class="ml-auto flex gap-2">
+          <button id="sendBtn" class="btn primary" ${canSend ? '' : 'disabled'}>${sent ? 'Sent ✓' : 'Send →'}</button>
+          <button id="draftClose" class="btn sm ghost">✕</button>
+        </div>
+      </div>
+      <div class="mb-3 p-3 rounded-lg" style="background:var(--bg2);border:1px solid var(--line)"><span class="dim">Subject</span> &nbsp;<span class="font-medium">${esc(d.subject)}</span></div>
+      <div class="space-y-2.5">${d.sentences.map(s => `
+        <div class="flex gap-2 items-start">
+          <span class="tag ${s.type}" style="margin-top:3px">${s.type.replace('_', ' ')}</span>
+          <div class="flex-1">
+            <div>${esc(s.text)}</div>
+            ${(s.cited || []).map(c => `<div class="text-[11px] mt-0.5" style="color:var(--ok)">↳ <span class="mono">${esc(c.field_path)}</span> = ${esc(c.value.slice(0, 70))} <span class="src" data-ev="${c.evidence_id}">src</span></div>`).join('')}
+            ${s.profile_value != null ? `<div class="text-[11px] mt-0.5" style="color:var(--info)">↳ <span class="mono">profile.${esc(s.profile_field)}</span> = ${esc(String(typeof s.profile_value === 'string' ? s.profile_value : JSON.stringify(s.profile_value)).slice(0, 70))}</div>` : ''}
+          </div></div>`).join('')}</div>
+      ${d.gate_notes.length ? `<div class="mt-3 text-[11.5px]" style="color:var(--warn)">${d.gate_notes.map(esc).join('<br>')}</div>` : ''}
+      <details class="mt-3 text-xs"><summary class="cursor-pointer dim">Full email as sent</summary><pre class="json mt-2" style="white-space:pre-wrap">${esc(d.body)}</pre></details>`;
     $('draft').classList.remove('hidden');
-    $('draft').querySelectorAll('[data-ev]').forEach(el => el.onclick = () => openEvidence(el.dataset.ev));
+    if (!silent) $('draft').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    bindDynamic($('draft'));
     $('draftClose').onclick = () => { $('draft').classList.add('hidden'); openDraftContact = null; };
     const star = $('starBtn'); if (star) star.onclick = async () => { try { await api('POST', `/api/contacts/${contactId}/feature`); await refresh(); } catch (e) { showErr(e); } };
     $('sendBtn').onclick = async () => {
-      $('sendBtn').textContent = 'Sending…';
-      try { await api('POST', `/api/contacts/${contactId}/send`); await refresh(); } catch (e) { showErr(e); $('sendBtn').textContent = 'Send'; }
+      $('sendBtn').innerHTML = '<span class="spin"></span> Sending…';
+      try { await api('POST', `/api/contacts/${contactId}/send`); await refresh(); } catch (e) { showErr(e); $('sendBtn').textContent = 'Send →'; }
     };
   } catch (e) { if (!silent) showErr(e); }
 }
@@ -306,59 +523,62 @@ async function loadDraft(contactId, silent) {
 // ---------- journal, booked card, NEEDS_HUMAN ----------
 function renderJournal(items) {
   const humans = (companiesData ? companiesData.ranked.flatMap(c => c.contacts) : []).filter(c => c.state === 'NEEDS_HUMAN');
-  const humanHtml = humans.map(c => `<li class="border border-amber-400 bg-amber-50 rounded p-2 mb-2" style="padding-left:8px"><div class="font-semibold">Needs you: ${esc(c.name)}</div>
-      <div class="flex gap-1 mt-1">${['treat_interested', 'suppress', 'dismiss'].map(a => `<button class="pill border-slate-800" data-h="${a}" data-c="${c.id}">${{ treat_interested: 'Treat as interested', suppress: 'Suppress', dismiss: 'Dismiss' }[a]}</button>`).join('')}</div></li>`).join('');
-  $('journal').innerHTML = humanHtml + items.map(j => `<li><div class="text-[10px] text-slate-500">${fmtT(j.at)}</div><div>${esc(j.text)}</div></li>`).join('');
+  const humanHtml = humans.map(c => `<li class="card p-3 mb-3" style="border-color:rgba(251,191,36,.5);padding-left:12px;list-style:none"><div class="font-semibold" style="color:var(--warn)">Needs you · ${esc(c.name)}</div><div class="dim mb-2">The reply wasn't clear enough to act on.</div>
+      <div class="flex gap-1.5 flex-wrap">${['treat_interested', 'suppress', 'dismiss'].map(a => `<button class="btn sm" data-h="${a}" data-c="${c.id}">${{ treat_interested: 'Treat as interested', suppress: 'Suppress', dismiss: 'Dismiss' }[a]}</button>`).join('')}</div></li>`).join('');
+  $('journal').innerHTML = humanHtml + items.map(j => `<li class="k-${esc(j.kind)}"><div class="dim text-[10.5px] mono">${fmtT(j.at)}</div><div>${esc(j.text)}</div></li>`).join('');
   $('journal').querySelectorAll('[data-h]').forEach(b => b.onclick = async () => { try { await api('POST', `/api/contacts/${b.dataset.c}/human/${b.dataset.h}`); await refresh(); } catch (e) { showErr(e); } });
 }
 function renderBooked(meetings) {
   const m = meetings.find(x => x.status === 'BOOKED');
-  if (!m) { $('booked').innerHTML = meetings.length ? `<div class="border border-slate-300 rounded p-2 mb-3 text-xs">Slots offered to ${esc(m0name(meetings[0]))}: ${(meetings[0].slots_offered || []).map(fmtDT).map(esc).join(' · ')}${meetings[0].status === 'MEETING_READY_TO_BOOK' ? `<div class="text-amber-800">Ready to book (calendar failed): ${esc(meetings[0].error || '')}</div>` : ''}</div>` : ''; return; }
-  $('booked').innerHTML = `<div class="border-2 border-slate-900 rounded p-3 mb-3 text-xs">
-    <div class="font-semibold text-sm">✓ Meeting booked</div>
-    <div>${fmtDT(m.start_at)} – ${fmtT(m.end_at)}</div>
+  if (!m) {
+    const o = meetings[0];
+    $('booked').innerHTML = o ? `<div class="card p-3 mb-4 text-xs"><div class="font-semibold mb-1">Slots offered to ${esc(o.contact ? o.contact.name : '')}</div>${(o.slots_offered || []).map((s, i) => `<div class="mono dim">${i + 1}) ${esc(fmtDT(s))}</div>`).join('')}${o.status === 'MEETING_READY_TO_BOOK' ? `<div class="mt-1" style="color:var(--warn)">Ready to book, calendar failed: ${esc(o.error || '')}</div>` : ''}</div>` : '';
+    return;
+  }
+  $('booked').innerHTML = `<div class="card p-4 mb-4 text-xs fade" style="border-color:var(--ok);background:linear-gradient(180deg,rgba(52,211,153,.10),rgba(52,211,153,.02))">
+    <div class="font-bold text-[15px] mb-1" style="color:var(--ok)">✓ Meeting booked</div>
+    <div class="font-semibold">${fmtDT(m.start_at)} – ${fmtT(m.end_at)}</div>
     <div>${esc(m.contact ? m.contact.name : '')} · ${esc(m.company_name || '')}</div>
-    <div><a class="underline" target="_blank" href="${esc(m.meet_link)}">${esc(m.meet_link)}</a></div>
-    <div class="text-slate-500">Accepted in reply: “${esc((m.accepted_text || '').slice(0, 60))}” · event id ✓</div></div>`;
+    <div class="mt-1"><a class="underline" style="color:var(--accent)" target="_blank" href="${esc(m.meet_link)}">${esc(m.meet_link)}</a></div>
+    <div class="dim mt-1">accepted in reply “${esc((m.accepted_text || '').slice(0, 60))}” · <span class="mono">event id ✓</span></div></div>`;
 }
-const m0name = (m) => m.contact ? m.contact.name : '';
 
 // ---------- memory panel ----------
 async function loadMemory() {
   try {
     const m = await api('GET', `/api/memory?campaign_id=${campaignId || ''}`);
-    const groups = [['Product and GTM', ['product.profile', 'gtm.icp']], ['Voice and rules', ['voice.style', 'outreach.rules']], ['Preferences', ['scheduling.prefs', 'reply.prefs']]];
+    const groups = [['Product & GTM', ['product.profile', 'gtm.icp']], ['Voice & rules', ['voice.style', 'outreach.rules']], ['Preferences', ['scheduling.prefs', 'reply.prefs']]];
     const all = Object.values(m.knowledge).flat();
-    const hint = { 'gtm.icp': ['Re-run discovery', () => $('discoverBtn').click()], 'product.profile': ['Regenerate drafts', regen], 'voice.style': ['Regenerate drafts', regen], 'outreach.rules': ['Regenerate drafts', regen] };
-    let html = '';
+    const hint = { 'gtm.icp': ['↻ Re-run discovery', () => $('discoverBtn').click()], 'product.profile': ['↻ Regenerate drafts', regen], 'voice.style': ['↻ Regenerate drafts', regen], 'outreach.rules': ['↻ Regenerate drafts', regen] };
+    let html = `<div class="dim mb-3">Everything the agent believes about you, and every decision it or you made. <b style="color:var(--text)">Edit anything</b>; agents read it on their next step.</div>`;
+    html += `<div class="text-[10.5px] uppercase tracking-wider dim mb-2">Decisions · newest first</div><ul class="tl mb-4">` +
+      (m.decisions.length ? m.decisions.map(d => `<li class="${d.source === 'user' ? 'k-memory' : ''}"><div class="dim text-[10.5px] mono">${fmtT(d.created_at)} <span class="tag ${d.source === 'user' ? 'you' : 'agent'}">${d.source === 'user' ? 'you' : 'agent'}</span>${esc(d.key.replace('decision.', '').replace(/_/g, ' '))}</div>
+        <div>${esc(d.rationale || '')}</div></li>`).join('') : '<li class="dim">none yet</li>') + '</ul>';
     for (const [title, keys] of groups) {
-      html += `<div class="font-semibold text-slate-700 mt-2 mb-1">${title}</div>`;
+      html += `<div class="text-[10.5px] uppercase tracking-wider dim mt-4 mb-2">${title}</div>`;
       for (const k of keys) {
         const it = all.find(i => i.key === k);
         const prop = m.proposed[k];
-        html += `<div class="border border-slate-200 rounded p-2 mb-2" data-key="${k}">
-          <div class="flex items-center gap-2"><b>${k}</b>${it ? `<span class="text-slate-500">v${it.version} · ${esc(it.source)}</span>${it.locked ? '<span class="pill bg-slate-100">🔒 edited by you</span>' : ''}` : '<span class="text-slate-400">not set yet</span>'}
-            <button class="ml-auto pill border-slate-800 editBtn">Edit</button></div>
-          ${it && it.rationale ? `<div class="text-slate-500 italic">${esc(it.rationale)}</div>` : ''}
+        html += `<div class="card p-3 mb-2" data-key="${k}">
+          <div class="flex items-center gap-2 mb-1"><span class="mono font-semibold">${k}</span>${it ? `<span class="dim">v${it.version} · ${esc(it.source)}</span>${it.locked ? '<span class="pill">🔒 edited by you</span>' : ''}` : '<span class="dim">not set yet</span>'}
+            <button class="btn sm ml-auto editBtn">✏️ Edit</button></div>
+          ${it && it.rationale ? `<div class="dim italic mb-1">${esc(it.rationale)}</div>` : ''}
           <pre class="json viewVal">${esc(JSON.stringify(it ? it.value : null, null, 2))}</pre>
-          <div class="editBox hidden"><textarea class="json">${esc(JSON.stringify(it ? it.value : (k === 'outreach.rules' ? [] : {}), null, 2))}</textarea>
-            <div class="flex gap-2 mt-1"><button class="pill bg-slate-900 text-white saveBtn">Save</button><button class="pill cancelBtn">Cancel</button>
-            ${hint[k] ? `<button class="pill border-slate-800 hintBtn ml-auto">${hint[k][0]}</button>` : '<span class="text-slate-500 self-center ml-auto">applies to the next slot offer / reply</span>'}</div></div>
-          ${prop ? `<details class="mt-1"><summary class="text-slate-500 cursor-pointer">Agent suggested (v${prop.version}, kept your edit)</summary><pre class="json">${esc(JSON.stringify(prop.value, null, 2))}</pre></details>` : ''}
+          <div class="editBox hidden mt-2"><textarea class="json">${esc(JSON.stringify(it ? it.value : (k === 'outreach.rules' ? [] : {}), null, 2))}</textarea>
+            <div class="flex gap-2 mt-2 items-center"><button class="btn sm primary saveBtn">Save</button><button class="btn sm ghost cancelBtn">Cancel</button>
+            ${hint[k] ? `<button class="btn sm hintBtn ml-auto">${hint[k][0]}</button>` : '<span class="dim ml-auto">applies to the next slot offer / reply</span>'}</div></div>
+          ${prop ? `<details class="mt-2"><summary class="dim cursor-pointer">Agent suggested v${prop.version} (your edit was kept)</summary><pre class="json mt-1">${esc(JSON.stringify(prop.value, null, 2))}</pre></details>` : ''}
         </div>`;
       }
     }
-    html += `<div class="font-semibold text-slate-700 mt-3 mb-1">Decisions <span class="font-normal text-slate-500">(agent and you)</span></div><ul class="tl">` +
-      m.decisions.map(d => `<li><div class="text-[10px] text-slate-500">${fmtT(d.created_at)} <span class="tag ${d.source === 'user' ? 'bg-slate-900 text-white' : ''}">${d.source === 'user' ? 'YOU' : 'AGENT'}</span>${esc(d.key.replace('decision.', ''))}</div>
-        <div>${esc(d.rationale || '')}</div><div class="text-slate-500">${esc(JSON.stringify(d.value))}</div></li>`).join('') + '</ul>' +
-      `<a class="underline text-slate-500" href="/api/memory/export?campaign_id=${campaignId || ''}" target="_blank">Export as Markdown</a>`;
+    html += `<a class="dim underline" href="/api/memory/export?campaign_id=${campaignId || ''}" target="_blank">export as Markdown</a>`;
     $('memoryPanel').innerHTML = html;
     $('memoryPanel').querySelectorAll('[data-key]').forEach(box => {
       const k = box.dataset.key;
       box.querySelector('.editBtn').onclick = () => box.querySelector('.editBox').classList.toggle('hidden');
       box.querySelector('.cancelBtn').onclick = () => box.querySelector('.editBox').classList.add('hidden');
       box.querySelector('.saveBtn').onclick = async () => {
-        try { const value = JSON.parse(box.querySelector('textarea').value); await api('PUT', '/api/memory', { campaign_id: null, key: k, value }); await loadMemory(); await renderIcp(); }
+        try { const value = JSON.parse(box.querySelector('textarea').value); await api('PUT', '/api/memory', { campaign_id: null, key: k, value }); lastIcpKey = ''; await loadMemory(); await renderIcp(); }
         catch (e) { showErr(e); }
       };
       const hb = box.querySelector('.hintBtn'); if (hb) hb.onclick = hint[k][1];
