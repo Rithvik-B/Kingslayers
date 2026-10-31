@@ -346,14 +346,16 @@ def company_detail(company_id: str):
                           "No verified email. Reach out via their LinkedIn profile (manual task), or re-run with a wider email policy.")
             out_contacts.append(d)
         raw = co.raw or {}
+        basic = raw.get("basic_info") or {}
         return {
             "id": co.id, "crustdata_id": co.crustdata_id, "name": co.name, "domain": co.domain,
             "website": (f"https://{co.domain}" if co.domain and not co.domain.startswith("http") else co.domain),
             "industry": co.industry, "country": co.country, "city": co.city, "headcount": co.headcount,
             "headcount_growth_12m": co.headcount_growth_12m, "fit": co.fit, "coverage": co.coverage, "tier": co.tier,
             "rank": co.rank, "why_now": co.why_now or [], "criteria": co.criteria or [],
-            "description": raw.get("description") or raw.get("about") or raw.get("summary") or raw.get("short_description"),
-            "linkedin_url": raw.get("linkedin_profile_url") or raw.get("linkedin_url") or (raw.get("social_handles") or {}).get("linkedin"),
+            "description": basic.get("description") or raw.get("description") or raw.get("about") or raw.get("summary"),
+            "linkedin_url": basic.get("linkedin_profile_url") or raw.get("linkedin_profile_url") or raw.get("linkedin_url")
+                            or (raw.get("social_handles") or {}).get("linkedin"),
             "raw": raw, "evidence": evidence, "contacts": out_contacts,
         }
 
