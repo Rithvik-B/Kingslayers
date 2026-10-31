@@ -40,12 +40,16 @@ async def _missing_module(request: Request, exc: ModuleNotFoundError):
     owner = {"discovery": "P2", "drafting": "P2", "llm": "P2", "crustdata": "P2", "scoring": "P2",
              "outreach": "P3", "inbox": "P3", "booking": "P3", "mail": "P3", "calendar_io": "P3", "gates": "P3"}
     name = (exc.name or "").removeprefix("app.")
-    return JSONResponse(503, {"detail": f"app.{name} is not pushed yet (owner: {owner.get(name, '?')})"})
+    if name in owner:
+        detail = f"app.{name} is not pushed yet (owner: {owner[name]})"
+    else:
+        detail = f"missing package: {exc.name} (run .venv/bin/pip install -r requirements.txt)"
+    return JSONResponse({"detail": detail}, status_code=503)
 
 
 @app.exception_handler(Exception)
 async def _any_error(request: Request, exc: Exception):
-    return JSONResponse(500, {"detail": f"{type(exc).__name__}: {exc}"})
+    return JSONResponse({"detail": f"{type(exc).__name__}: {exc}"}, status_code=500)
 
 
 # ---------- startup and background loop ----------
