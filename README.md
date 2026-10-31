@@ -51,5 +51,5 @@ docs/ideas/           one file per idea, with a scoring rubric
 docs/notes/           research and lessons learned
 competition-info/     organizer material: themes, past winners
 .claude/              shared hook and the /sync, /decide, /handoff commands
-.mcp.json             Crustdata MCP server
+.mcp.json             Crustdata MCP server (research in Claude Code only; the app uses REST)
 ```

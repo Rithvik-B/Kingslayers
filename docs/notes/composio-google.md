@@ -22,7 +22,7 @@ before relying on them. Sources are at the bottom.
 - **Connection status:** only `ACTIVE` connections can run tools. Disabling an account also disables its
   triggers, and re-enabling the account does **not** turn the triggers back on.
 
-## Receiving events (triggers)
+## Receiving events (triggers): research only, NOT used in the build (we poll)
 
 - **Register a webhook** with `composio.triggers.set_webhook_subscription(webhook_url=...)`. Keep the
   `secret` it returns.
@@ -40,7 +40,7 @@ before relying on them. Sources are at the bottom.
 - **Avoid reply loops:** skip events sent from the connected mailbox or its send-as aliases. Creating
   `GMAIL_EMAIL_SENT_TRIGGER` does not stop our own messages from appearing as new-message events.
 - **Demo workaround:** while waiting on specific threads, fetch just those threads with the Gmail tools every
-  15–20 seconds. Keep the trigger as the background path.
+  15–20 seconds. (In the build we only poll; no trigger.)
 
 ## Google Calendar
 

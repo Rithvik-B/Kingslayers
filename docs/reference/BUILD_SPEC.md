@@ -1,5 +1,5 @@
 > **REFERENCE ONLY. `PLAN.md` at the repo root is the build contract and wins on every conflict.**
-> Superseded here: direct Google OAuth, SMTP/IMAP/.ics fallback, Next.js frontend, "pick any LLM provider", the 5-hour timeline, the `~/.gstack` and `/home/...` paths.
+> Superseded here: direct Google OAuth, SMTP/IMAP/.ics fallback, Next.js frontend, "pick any LLM provider", the 5-hour timeline, the `~/.gstack` and `/home/...` paths. ICP editing is no longer deferred: the ICP, product, voice and rules are editable in Seller Memory (`PLAN.md` §6.13).
 > Still valid where PLAN.md cites it: the claim gate, send gates, recipient guard, contact states, inbox matching, and the BOOKED rule.
 
 # Build Spec: ContextCon Sales Agent (5-hour hackathon build)

@@ -9,6 +9,12 @@ auto-memory and the chat are not shared with anyone.
 **We are in the build.** `PLAN.md` at the repo root defines the stack, the file ownership (P1, P2, P3), every
 module's contract, the routes, the UI and the demo. It wins over every other doc, including
 `docs/reference/`.
+- **When the user says "I am P1", "I am P2" or "I am P3"** (usually `@PLAN.md I am P2`), follow
+  `PLAN.md`'s **START HERE** section, then that role card's checklist, in order.
+- **The app has its own Seller Memory** (`app/memory.py`, `PLAN.md` §6.13). It holds the seller's product,
+  ICP, voice, rules and every agent and seller decision, and the seller can edit it. The app's agents must
+  read those settings from memory, never hardcode them. Don't confuse it with this repo's team memory
+  (`docs/`) or with Claude's auto-memory.
 - Build only what `PLAN.md` lists.
 - Edit only the files your person owns (`PLAN.md` §3).
 - Never substitute the stack: FastAPI + one HTML page, Crustdata REST, Composio for Gmail and Calendar,
@@ -23,7 +29,7 @@ module's contract, the routes, the UI and the demo. It wins over every other doc
 
 - Crustdata runs it. We build on Crustdata's people and company data: 800M+ profiles and 200M+ companies,
   with employment history, headcount over time, funding, hiring, job postings, posts, work emails, and live
-  web search. The Crustdata MCP server is set up in `.mcp.json`.
+  web search. The Crustdata MCP server in `.mcp.json` is for research in Claude Code; the app calls the Crustdata REST API (`PLAN.md`).
 - Brief: build an agent that replaces "any service people are paid to do, on data about people and
   companies." There are 10 themes: Hiring, Investing, Research and markets, Insurance, Trust and compliance,
   Buying and paying, Agents that spend, Supply chain, Revenue, and Infrastructure for agents. Or bring your
@@ -46,7 +52,7 @@ module's contract, the routes, the UI and the demo. It wins over every other doc
 | `docs/reference/` | The old BUILD_SPEC and long spec. Reference only, for the sections `PLAN.md` cites. |
 | `docs/STATUS.md` | Live board: phase, who is on what, next steps, open questions. Keep it current. |
 | `docs/decisions/` | One file per team decision. Format and rules: `docs/decisions/README.md`. |
-| `docs/ideas/` | One file per idea while we pick what to build. Template and scoring: `docs/ideas/README.md`. |
+| `docs/ideas/` | Ideation is closed; the chosen idea is in `PLAN.md`. Template kept for later ideas. |
 | `docs/notes/` | Research and lessons learned: API quirks, credit costs, what worked and what didn't. One file per topic. |
 | `competition-info/` | Organizer material. Reference only, don't edit. |
 

@@ -36,7 +36,7 @@ Sources are at the bottom.
 Credit costs mentioned in the skills: `person_enrich` 1, `company_enrich` 2 per match, `social_post_list_live`
 1 per post. `company_identify` and the autocomplete calls are free.
 
-## Running the skills from a backend (Claude Agent SDK)
+## Running the skills from a backend (Claude Agent SDK): not used in the build
 
 - **Loading the plugin:** pass `plugins=[{"type": "local", "path": "<plugin dir>"}]`. Only local paths work;
   there's no marketplace install in the SDK. Invoke a skill by sending `/crustdata:<skill> <args>` as the
@@ -53,7 +53,7 @@ Credit costs mentioned in the skills: `person_enrich` 1, `company_enrich` 2 per 
   relative to it.
 - **Cost figures:** `total_cost_usd` is the SDK's own estimate, not what we're billed.
 
-## Running headless: auth and LLM endpoint (checked 2026-10-31)
+## Running headless: auth and LLM endpoint (checked 2026-10-31): not used; AIML was rejected
 
 - **The plugin's `.mcp.json` has no auth.** It is only `{"type": "http", "url": "https://install.crustdata.com/mcp"}`
   and relies on the browser login.

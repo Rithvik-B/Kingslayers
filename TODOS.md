@@ -3,8 +3,10 @@
 These are Tier 3 items from `PLAN.md` §11. They're kept for the pitch ("what comes next") and for after the
 hackathon.
 
-- **ICP criterion editor.** Today the ICP is read-only, with Approve and Regenerate. Next: let the seller
-  edit each criterion's field, type and weight. Only supported fields can be mandatory.
+- **A structured form editor for the ICP.** Today the ICP is edited as JSON in the Seller Memory panel. Next:
+  a form for each criterion's field, type and weight. Only supported fields can be mandatory.
+- **More Seller Memory:** campaign-level overrides in the UI, a memory diff view, and letting the agent
+  learn rules from the seller's edits.
 - **Follow-ups and the demo clock.** Up to 2 follow-ups at day 3 and day 7, then `EXHAUSTED`, with a
   "Fast-forward 3 days" control.
 - **REPLAY.** Cache Crustdata responses in `data/replay/` and add a manual REPLAY toggle and badge.

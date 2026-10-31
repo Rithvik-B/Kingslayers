@@ -7,6 +7,160 @@ Deadline: **code freeze 15:10 IST today (2026-10-31).** Three people (P1, P2, P3
 Claude Code on their own Max account, build in parallel on `main` with strict file ownership. Then we
 integrate, test, fix and demo.
 
+## Changelog (read this after every pull)
+
+- **14:20, Seller Memory added (§6.13).** The product profile, the ICP and GTM, the writing voice, the
+  seller's rules, scheduling preferences, and **every decision the agent or the seller made** are stored in
+  one `memory` table. They're shown in a Memory panel and the seller can edit them. Agents read memory at the
+  start of every step, so an edit changes the next run.
+  - **Contract changes:** the `campaigns.product_profile` and `campaigns.icp` columns are **removed** (they're
+    now the memory keys `product.profile` and `gtm.icp`).
+  - **P1** adds the `memory` table, `app/memory.py`, the memory routes and the Memory panel.
+  - **P2** reads and writes memory in discovery and drafting.
+  - **P3** reads `scheduling.prefs` and `reply.prefs`, and records reply and booking decisions.
+- **14:20, role cards added (START HERE, below).** Each person types `@PLAN.md I am P1` (or `P2`, `P3`) and
+  their Claude follows the matching card. The timeline moved to 14:30, 14:50 and 15:10.
+
+---
+
+## START HERE: the user says "@PLAN.md I am P1" (or P2, or P3)
+
+### Steps for every Claude, before your role card
+
+1. **Read this whole file.** It wins over every other doc in the repo.
+2. **Find your role** in the user's message (P1, P2 or P3). If it isn't there, ask which one, then follow
+   only that card. **P1 is Rithvik**, who also owns this file and runs the demo laptop.
+3. **Sync and set up:**
+   - Run `git pull --rebase`.
+   - If `.venv/` is missing, run `python3 -m venv .venv`, then `.venv/bin/pip install -r requirements.txt`.
+     If `requirements.txt` isn't pushed yet, install the list in §1 directly.
+4. **Check that `.env` exists, without printing it.** If it's missing, stop and ask your user to create it
+   from `.env.example`, with the values Rithvik shares privately. Make sure `ANTHROPIC_API_KEY` is not
+   set: `env | grep -c ANTHROPIC_API_KEY` must print 0.
+5. **Work only on your card's files.** Create or edit only the files under "You own". If anything else
+   needs to change, tell your user which file, which owner, and what change.
+6. **Go through your checklist in order.** After each item:
+   - check it: run its test, or at least
+     `.venv/bin/python -c "import app.<module>"`
+   - stage only your own files, by name: `git add <your files>`
+   - commit, then run `git pull --rebase && git push`
+7. **Match the contracts exactly** (§5, §6): names, signatures, return shapes, memory keys. If you need
+   another person's module before they've pushed it, write a throwaway stub in a file you never commit.
+8. **Never:**
+   - change the stack (§1), or add a feature not in this file
+   - hardcode a seller setting (use `app/memory.py`)
+   - print or commit secrets
+   - send email or invites to any address except `STAND_IN_EMAIL`
+   - force-push
+9. **At 14:50, report to your user:** what works, what's left, and the test results. Then follow the
+   integration steps in §4.
+
+### P1: Rithvik (app shell, data, memory, routes, UI, demo laptop)
+
+**You own:** `PLAN.md`, `app/__init__.py`, `app/config.py`, `app/db.py`, `app/models.py`,
+`app/journal.py`, `app/memory.py`, `app/main.py`, `app/static/index.html`, `tests/test_memory.py`,
+`requirements.txt`, `.env.example`, `README.md`.
+
+**Checklist:**
+1. **By 14:30, push the foundation.** P2 and P3 import these, so push them first:
+   - `requirements.txt` (§1)
+   - `app/__init__.py`
+   - `config.py` (§5, last paragraph)
+   - `db.py`
+   - `models.py`, exactly per §5 including `memory`
+   - `journal.py`
+   - `memory.py` (§6.13)
+   - `tests/test_memory.py`
+2. **`app/main.py`:**
+   - Startup: `init_db()`, `memory.ensure_defaults()`, and the background loop that runs
+     `inbox.inbox_pass()` every 15 s.
+   - Every route in §7.
+   - **Import P2's and P3's modules inside the route functions, not at the top of the file,** so the app
+     starts even before they've pushed.
+3. **`app/static/index.html`:** everything in §8. Order: setup panel, funnel and ranked table with the
+   `[src]` drawer, draft panel with Send, journal with Check inbox now and the booked card, then the Memory
+   panel.
+4. **14:50 integration** (§4). You run the full flow on your laptop and route each failure to its owner.
+5. **README:** run steps, plus one paragraph on what works. Then push by 15:10.
+
+**You give others:** `config.S`, `db.session`, `models`, `journal.log` and `memory`. This is the first push;
+everything depends on it.
+**You need:** P2's `discovery` and `drafting` functions, and P3's `outreach`, `inbox` and `booking`
+functions.
+**Done when:**
+- the app starts
+- every §7 route answers
+- the UI shows the funnel, table, drawer, draft, journal, booked card and Memory panel
+- `tests/test_memory.py` passes
+
+### P2: discovery and drafting (Crustdata, scoring, LLM, drafts, claim gate)
+
+**You own:** `app/llm.py`, `app/crustdata.py`, `app/scoring.py`, `app/discovery.py`, `app/drafting.py`,
+`scripts/smoke_crustdata.py`, `tests/test_scoring.py`, `tests/test_claim_gate.py`,
+`docs/notes/crustdata-rest.md`.
+
+**Checklist:**
+1. **By 14:30, the Crustdata smoke test** (`scripts/smoke_crustdata.py`):
+   - Read https://docs.crustdata.com for `/company/search`, `/job/search`, `/person/search` and
+     `/person/enrich`.
+   - Make one tiny real call to each.
+   - Write the exact request and response field names into `docs/notes/crustdata-rest.md`, and push.
+   - Tell Rithvik the real business-email `status` values, so `ACCEPTED_EMAIL_STATUSES` can be set.
+   - **Never guess a field name.**
+2. **`app/llm.py` (§6.1). Push it early:** P3 needs `complete_json` for reply classification.
+3. **`app/crustdata.py`** (§6.2), including the rate limiter and credit ceiling.
+4. **`app/scoring.py`** (§6.3) and `tests/test_scoring.py`.
+5. **`app/discovery.py`** (§6.4): `generate_profile_and_icp` first (it writes the memory keys), then
+   `run_discovery` (it reads `gtm.icp` from memory and records its decisions).
+6. **`app/drafting.py`** (§6.5) and `tests/test_claim_gate.py`. Read `product.profile`, `voice.style` and
+   `outreach.rules` from memory at call time.
+7. **Self-check with `DISCOVERY_COMPANY_LIMIT=5`:**
+   - Create a campaign row with the §10 product text.
+   - Run `generate_profile_and_icp`, set `icp_approved`, then run `run_discovery`.
+   - Confirm that companies, contacts, evidence, drafts and memory rows exist with real data.
+
+**You give others:** `llm.complete_json` (P3), and `discovery.generate_profile_and_icp`,
+`discovery.run_discovery` and `drafting.generate_drafts` (P1's routes).
+**You need:** P1's foundation push (until then, code against §5 and §6.13).
+**Done when:**
+- the self-check gives real ranked companies with receipts, verified-email contacts, one featured contact,
+  gated drafts and memory items
+- the P2 tests pass
+
+### P3: conversation (gates, recipient guard, Composio mail and calendar, inbox, booking)
+
+**You own:** `app/gates.py`, `app/mail.py`, `app/calendar_io.py`, `app/outreach.py`, `app/inbox.py`,
+`app/booking.py`, `scripts/smoke_composio.py`, `tests/test_guard.py`, `tests/test_inbox.py`,
+`docs/notes/composio-tools.md`.
+
+**Checklist:**
+1. **By 14:30, the Composio smoke test** (`scripts/smoke_composio.py`):
+   - Verify the tool slugs and argument names.
+   - Send one email to `STAND_IN_EMAIL` and read its thread back.
+   - Query free slots.
+   - Create one event for `STAND_IN_EMAIL` with a Meet link. If no Meet link comes back, use the §6.8
+     fallback.
+   - Record the findings in `docs/notes/composio-tools.md`, and push.
+2. **`app/mail.py` (§6.7): write `check_recipient` and `tests/test_guard.py` first.** The guard fails closed.
+3. **`app/gates.py`** (§6.6).
+4. **`app/calendar_io.py`** (§6.8). Read `scheduling.prefs` from memory at call time.
+5. **`app/outreach.py`** (§6.9).
+6. **`app/inbox.py`** (§6.10) and `tests/test_inbox.py`. Read `reply.prefs` from memory at call time, and
+   record `decision.reply_label`.
+7. **`app/booking.py`** (§6.11). Record `decision.slot_booked`.
+8. **Self-check:**
+   - Insert a test contact with `verified_email` set and `state=READY` in a STAND_IN campaign.
+   - Send the email. Reply "interested" from the stand-in inbox, then run `inbox_pass`.
+   - Reply "2", then run `inbox_pass` again.
+   - Confirm the result is BOOKED with an event id and a Meet link.
+
+**You give others:** `outreach.send_initial`, `inbox.inbox_pass` and `INBOX_LOCK`, and
+`booking.offer_slots` (P1's routes).
+**You need:** P1's foundation push, and P2's `llm.complete_json` (stub it until it's pushed).
+**Done when:**
+- the guard and inbox tests pass
+- the self-check books a real event with a Meet link on the stand-in
+
 ---
 
 ## 0. What we're building
@@ -23,8 +177,12 @@ A seller enters a product description. The agent then:
    calendar.
 8. When the stand-in replies "2", books a **Google Calendar event with a Meet link**.
 
-**What makes us different: every claim has a receipt.** Any company pick, score, "why now" signal or
-prospect fact in an email can be clicked to show the raw Crustdata record behind it.
+**What makes us different:**
+- **Every claim has a receipt.** Any company pick, score, "why now" signal or prospect fact in an email can
+  be clicked to show the raw Crustdata record behind it.
+- **The seller can see and steer everything (Seller Memory).** What the agent believes about the seller's
+  product and GTM, how it writes, and every decision it made along the way are visible and editable. The
+  agents work from that memory, so changing it changes their behaviour.
 
 **BOOKED** means a calendar event id **and** a Meet link came back from Google. A sent email, a positive
 reply or an `.ics` file is not BOOKED.
@@ -77,7 +235,7 @@ BACKUP_ANTHROPIC_MODEL=claude-sonnet-5-5
 DEMO_MODE=true               # true on the stage laptop: refuses to create LIVE campaigns
 OUTBOUND_ENABLED=false       # global kill switch for LIVE sends
 TIMEZONE=Asia/Kolkata
-DISCOVERY_COMPANY_LIMIT=20   # use 5 while developing, to save credits
+DISCOVERY_COMPANY_LIMIT=5    # 5 while developing, to save credits; set 20 for the demo pre-run
 CONTACTS_PER_COMPANY=1
 CREDIT_CEILING_PER_RUN=150
 ACCEPTED_EMAIL_STATUSES=verified,valid   # P2 confirms the real values at 14:15
@@ -91,6 +249,8 @@ app/config.py              P1   settings object `S` read from env (python-dotenv
 app/db.py                  P1   engine, SessionLocal, init_db(), session() context manager
 app/models.py              P1   tables, FROZEN contract in §5 (copy exactly)
 app/journal.py             P1   log() for the agent journal
+app/memory.py              P1   Seller Memory store (§6.13)
+tests/test_memory.py       P1
 app/main.py                P1   FastAPI app, every route in §7, background inbox loop, static page
 app/static/index.html      P1   the whole UI (§8)
 app/llm.py                 P2   LLM adapter (§6.1)
@@ -111,6 +271,7 @@ tests/test_claim_gate.py   P2
 tests/test_guard.py        P3
 tests/test_inbox.py        P3
 requirements.txt, .env.example, README.md   P1
+PLAN.md                    P1   (contract changes go through Rithvik)
 data/                      gitignored (DB, caches)
 ```
 
@@ -119,27 +280,34 @@ Rules:
   function to run something locally, stub it in a scratch file you don't commit.
 - **If a contract must change, the owner changes it and says so in the team chat.** Never edit someone
   else's file.
-- **Imports go one way:** `main` imports everything. `discovery` imports `crustdata`, `scoring`, `llm`,
-  `drafting`, `models` and `journal`. `inbox`, `booking`, `outreach` and `gates` import `mail`,
-  `calendar_io`, `llm`, `models` and `journal`. No circular imports.
+- **Imports go one way:** `main` imports everything. `memory` imports only `db`, `models` and `journal`.
+  `discovery` imports `crustdata`, `scoring`, `llm`, `drafting`, `memory`, `models` and `journal`. `inbox`,
+  `booking`, `outreach` and `gates` import `mail`, `calendar_io`, `llm`, `memory`, `models` and `journal`. No
+  circular imports.
+- **Never hardcode a seller setting.** Product facts, ICP, voice, rules, slot length, working hours and the
+  reply threshold always come from `memory.get(...)` (§6.13).
 - **Every external action writes a journal line** (`journal.log`).
 
 ## 4. Timeline (IST)
 
 | Time | P1 (Rithvik, demo laptop) | P2 (discovery) | P3 (conversation) |
 |---|---|---|---|
-| 14:15 | Push skeleton: requirements, config, db, models, journal, empty main with `/` + `/api/health` | Smoke-test Crustdata: real field names, email status values. Write them in `docs/notes/crustdata-rest.md` and push | Smoke-test Composio: send to stand-in, read thread, find free slots, **create event with Meet link**. Write findings in `docs/notes/composio-tools.md` and push |
-| 14:15–14:40 | All routes, UI, background loop | llm, crustdata, scoring, discovery, drafting | gates, mail, calendar_io, outreach, inbox, booking |
-| **14:40** | **Tier 1 pushed by everyone** | | |
-| 14:40–14:55 | Run the full flow on the stand-in; owners fix their own files | fix | fix |
-| 14:55–15:05 | Pre-run discovery (limit 20), `POST /api/demo/reset` of rehearsal data, rehearse §10 | Tier 2 if green | Tier 2 if green |
-| 15:05–15:10 | README, final push, submit. **Freeze 15:10** | | |
+| by 14:30 | Foundation pushed: requirements, config, db, models, journal, memory | Crustdata smoke test and `docs/notes/crustdata-rest.md` pushed; `llm.py` soon after | Composio smoke test (Meet link!) and `docs/notes/composio-tools.md` pushed |
+| 14:30–14:50 | `main.py` routes, inbox loop, UI with Memory panel | crustdata, scoring, discovery, drafting | mail and guard, gates, calendar_io, outreach, inbox, booking |
+| **14:50** | **Tier 1 pushed by everyone. Report to your user.** | | |
+| 14:50–15:08 | **Integration on Rithvik's laptop:** pull, start the app, run §10 on the stand-in with limit 5. Send each failure to its owner | fix your own files, push | fix your own files, push |
+| 15:08–15:10 | README, final push. **Code freeze 15:10** | final push | final push |
+| after the freeze | Pre-run discovery with limit 20, `/api/demo/reset` of rehearsal data, rehearse §10 (running the app isn't coding) | | |
 
-**Tiers.** Tier 1 is the stage path and is never cut. Do Tier 2 only after Tier 1 passes integration.
-Tier 3 is not built today; it lives in `TODOS.md`.
+**Tiers.** Tier 1 is the stage path plus Seller Memory, and is never cut. Do Tier 2 only after Tier 1 passes
+integration. Tier 3 is not built today; it lives in `TODOS.md`.
 
-**Git:** everyone commits small and runs `git pull --rebase && git push` at least every 10 minutes from
-14:15. Ownership never overlaps, so rebases are clean. Never force-push.
+**Integration rules:**
+- A bug gets fixed by the owner of the file where it is.
+- If two modules disagree, the code that departs from this file's contract changes. The contract doesn't.
+
+**Git:** everyone commits small and runs `git pull --rebase && git push` at least every 10 minutes. Ownership
+never overlaps, so rebases are clean. Never force-push.
 
 ## 5. Data model (P1 writes `app/models.py` from this, exactly)
 
@@ -148,7 +316,7 @@ All ids are UUID strings (`str(uuid4())`). All times are timezone-aware UTC. JSO
 
 | Table | Columns |
 |---|---|
-| `campaigns` | id, name, product_text, product_profile JSON (nullable), icp JSON (nullable), icp_approved bool=False, delivery_mode str (`STAND_IN`\|`LIVE`), status str (`DRAFT`\|`DISCOVERING`\|`READY`\|`RUNNING`\|`DONE`\|`FAILED`), paused bool=False, discovery_ran_at datetime (nullable), credits_used float=0, consent JSON (nullable; LIVE only), created_at |
+| `campaigns` | id, name, product_text, icp_approved bool=False, delivery_mode str (`STAND_IN`\|`LIVE`), status str (`DRAFT`\|`DISCOVERING`\|`READY`\|`RUNNING`\|`DONE`\|`FAILED`), paused bool=False, discovery_ran_at datetime (nullable), credits_used float=0, consent JSON (nullable; LIVE only), created_at |
 | `companies` | id, campaign_id, crustdata_id str, name, domain (nullable), industry (nullable), country (nullable), city (nullable), headcount int (nullable), headcount_growth_12m float (nullable), fit float (nullable), coverage float, tier str (`T1`\|`T2`\|`T3`\|`T4`\|`NEEDS_EVIDENCE`\|`EXCLUDED`), rank int (nullable), why_now JSON = list of `{label, evidence_id}`, criteria JSON = list of `{constraint_id, field, type, verdict, observed, evidence_id}`, raw JSON |
 | `contacts` | id, campaign_id, company_id, crustdata_person_id (nullable), name, title, role str (`CHAMPION`\|`ECONOMIC_BUYER`\|`OTHER`), linkedin_url (nullable), verified_email (nullable; **never sent to the UI**), email_status (nullable), state str (see §6.12), featured bool=False, thread_id (nullable), delivered_to (nullable), raw JSON |
 | `evidence` | id, campaign_id, subject_type (`company`\|`contact`), subject_id, endpoint str (e.g. `/job/search`), field_path str, value str, source_url (nullable; never invented), raw_excerpt JSON, retrieved_at |
@@ -157,6 +325,10 @@ All ids are UUID strings (`str(uuid4())`). All times are timezone-aware UTC. JSO
 | `meetings` | id, campaign_id, contact_id, slots_offered JSON = list of ISO start strings, start_at (nullable), end_at (nullable), event_id (nullable), meet_link (nullable), status (`OFFERED`\|`BOOKED`\|`MEETING_READY_TO_BOOK`), accepted_message_id (nullable), error (nullable), created_at |
 | `suppressions` | id, contact_key str (normalized real email, or `contact:<id>` if there's no email), reason, source_campaign_id, source_mode, created_at |
 | `journal` | id, campaign_id, contact_id (nullable), at, kind str, text str, data JSON (nullable) |
+| `memory` | id, campaign_id (nullable: NULL means seller-wide, applies to every campaign), key str, kind str (`profile`\|`icp`\|`voice`\|`rule`\|`decision`), value JSON, source str (`agent:<module>` or `user`), rationale str (nullable), status str (`active`\|`superseded`\|`proposed`), locked bool=False (true after a user edit; agents may not overwrite it), version int, created_at |
+
+The journal is the event timeline ("what happened"). Memory is the knowledge and decisions that drive
+behaviour ("what the agent believes and decided, and why"). Both are shown in the UI.
 
 `app/journal.py`: `def log(campaign_id: str, kind: str, text: str, contact_id: str | None = None, data: dict | None = None) -> None`
 opens its own session and commits.
@@ -238,23 +410,34 @@ async def generate_profile_and_icp(campaign_id: str) -> None
 async def run_discovery(campaign_id: str) -> None   # requires icp_approved; journals each stage
 ```
 - **ICP generation:** one LLM call with the schema below. Code then forces any constraint whose field isn't
-  machine-checkable to `PREFERRED` and labels it "not machine-checkable". Save the result on the campaign.
+  machine-checkable to `PREFERRED` and labels it "not machine-checkable".
+- **Save to Seller Memory, seller-wide** (`campaign_id=None`), with `source="agent:discovery"` and a
+  one-line rationale:
+  - `product_profile` to the key `product.profile` (kind `profile`)
+  - `icp` to the key `gtm.icp` (kind `icp`)
+  - `voice` to the key `voice.style` (kind `voice`)
+
+  `memory.put` keeps any key the seller has edited (locked) and stores the agent's version as `proposed`
+  (§6.13).
   ```json
   {"product_profile": {"name": "str", "category": "str", "value_proposition": "str", "capabilities": ["str"], "target_departments": ["str"], "problems": ["str"]},
+   "voice": {"tone": "str", "max_words": 110, "avoid": ["str"]},
    "icp": {"nl_query": "str", "person_titles": ["str"], "job_keywords": ["str"],
            "constraints": [{"id": "str", "field": "country|headcount|industry|open_roles|headcount_growth_12m|other",
                             "type": "MANDATORY|PREFERRED", "operator": "eq|in|between|gte", "expected": "any",
                             "weight": 0, "importance": "critical|high|medium|low", "relaxable": false, "rationale": "str"}]}}
   ```
 - **The pipeline:**
-  1. `status=DISCOVERING`.
+  1. `status=DISCOVERING`. Read `icp = memory.get(campaign_id, "gtm.icp")` **now**, so a seller's edit
+     applies to this run. Never read a cached copy.
   2. `company_search` with `icp.nl_query`, plus country and headcount filters if mandatory, and
      `limit = 3 × DISCOVERY_COMPANY_LIMIT` (at most 60).
   3. `job_search` for each company in parallel (`asyncio.gather`) with `icp.job_keywords`.
   4. Evaluate and score. Write the `companies` rows and one `evidence` row per observed field. Each
      criterion stores its `evidence_id`, and each `why_now` chip stores the job-postings or growth evidence.
   5. **Shortfall:** if fewer than `DISCOVERY_COMPANY_LIMIT` companies are eligible, re-run once without the
-     low-importance relaxable preferences. Then report "N target · M qualified" honestly.
+     low-importance relaxable preferences. Then report "N target · M qualified" honestly. If it relaxed
+     anything, record `memory.record_decision(cid, "decision.shortfall_relaxed", {"dropped": [constraint ids]}, ...)`.
   6. For the top `DISCOVERY_COMPANY_LIMIT` eligible companies, run `person_search` with
      `icp.person_titles`. Role labels: Head or VP or Director of Talent and HR is `CHAMPION`; CHRO, CPO or
      VP People is `ECONOMIC_BUYER`. Keep `CONTACTS_PER_COMPANY`.
@@ -262,7 +445,9 @@ async def run_discovery(campaign_id: str) -> None   # requires icp_approved; jou
      `ACCEPTED_EMAIL_STATUSES`. Set `state=READY` with `verified_email`, otherwise `state=UNREACHABLE`.
      Store the email's evidence row (field `contact.business_emails.status`, value is the status only, not
      the email).
-  8. `featured` = the top-ranked `T1` contact (or `T2` if there's no `T1`) that is `READY`.
+  8. `featured` = the top-ranked `T1` contact (or `T2` if there's no `T1`) that is `READY`. Record
+     `decision.featured_contact` = `{contact_id, name, company}`, with a rationale such as "Top T1 with a
+     verified email".
   9. `await drafting.generate_drafts(campaign_id)`.
   10. Set `discovery_ran_at=now` and `status=READY`. Save `credits_used`.
 - **On `CreditCeilingReached`:** stop, journal a warning, and keep what's done.
@@ -275,12 +460,19 @@ def claim_gate(sentences: list[dict], allowed_evidence_ids: set[str], profile: d
     # returns (kept_sentences, "PASS" | "NEEDS_REVIEW", notes)
 def opt_out_line(campaign) -> str
 ```
-- **One draft per `READY` contact**, all in parallel. The LLM gets the product profile, the company facts as
-  `{evidence_id, field, value}` (only this company's and contact's evidence), and the contact's name,
-  title and role. Schema:
+- **Read memory at call time:** `product.profile`, `voice.style` and `outreach.rules` (a list of the
+  seller's own rules, such as "Never mention pricing").
+- **One draft per `READY` contact**, all in parallel. The LLM gets:
+  - the product profile
+  - the voice (tone, `max_words`, the avoid list)
+  - the seller's rules, as instructions it must follow
+  - the company facts as `{evidence_id, field, value}` (only this company's and contact's evidence)
+  - the contact's name, title and role
+
+  Schema:
   `{"subject": "str", "sentences": [{"type": "prospect_fact|product_fact|hypothesis|cta", "text": "str", "evidence_ids": ["str"], "profile_field": "str|null"}]}`
 - **Prompt rules:**
-  - 70–110 words.
+  - At most `voice.style.max_words` words (default 110).
   - One concrete "why now" prospect fact.
   - Hypotheses worded as questions or with "might".
   - One CTA asking for a 20-minute call.
@@ -288,8 +480,9 @@ def opt_out_line(campaign) -> str
   - Don't write an opt-out line; code adds it.
 - **The claim gate:**
   - Drop any `prospect_fact` that has no evidence id in `allowed_evidence_ids`.
-  - Drop any `product_fact` whose `profile_field` doesn't exist in the profile (for example
-    `capabilities[2]` or `value_proposition`).
+  - Drop any `product_fact` whose `profile_field` doesn't exist in the **current memory**
+    `product.profile` (for example `capabilities[2]` or `value_proposition`). So if the seller edits the
+    profile, the claims allowed in emails follow it.
   - The draft is `NEEDS_REVIEW` if fewer than one `prospect_fact` or no `cta` is left.
 - **Body:** the kept sentences joined, then `opt_out_line()` appended by code:
   - STAND_IN: `"If this isn't relevant, just reply 'remove me' and I won't email again."`
@@ -344,11 +537,14 @@ async def fetch_thread(thread_id: str) -> list[dict]
 ### 6.8 `app/calendar_io.py` (P3)
 
 ```python
-async def free_slots(start: datetime, end: datetime) -> list[tuple[datetime, datetime]]  # 20-min, 09:00-18:00 IST, 10-min buffers
+async def free_slots(start: datetime, end: datetime) -> list[tuple[datetime, datetime]]  # length, hours, buffers from memory scheduling.prefs
 async def is_free(start: datetime, end: datetime) -> bool
 async def create_meeting(campaign, contact, meeting_id: str, *, start, end, title: str, description: str) -> dict
     # returns {"event_id": str | None, "meet_link": str | None}
 ```
+- **Read `scheduling.prefs` from memory at call time:**
+  `{working_hours: [9, 18], slot_minutes: 20, buffer_minutes: 10, days_ahead: 7, timezone: "Asia/Kolkata"}`.
+  The defaults are seeded by `memory.ensure_defaults()`.
 - **Tools:** `GOOGLECALENDAR_FIND_FREE_SLOTS` or `GOOGLECALENDAR_FREE_BUSY_QUERY`, and
   `GOOGLECALENDAR_CREATE_EVENT` with `create_meeting_room=True`, `attendees=[delivered_recipient]` and
   `send_updates="all"`. Run `mail.check_recipient` on the attendee before the call.
@@ -392,11 +588,14 @@ async def classify(text: str) -> dict              # LLM; schema below
      stand-in address) and set `state=SUPPRESSED`.
   4. If `state == SCHEDULING`, call `booking.handle_slot_reply(contact_id, text)`.
   5. Otherwise classify:
-     - `INTERESTED` or `MEETING_REQUEST` with confidence ≥ 0.75: call `booking.offer_slots(contact_id)`.
+     - `INTERESTED` or `MEETING_REQUEST` with confidence ≥ `memory.get(cid, "reply.prefs")["interested_min_confidence"]`
+       (default 0.75): call `booking.offer_slots(contact_id)`.
      - `NOT_INTERESTED`, `OPT_OUT` or `BOUNCE`: suppress.
      - Anything else, or confidence < 0.75: `NEEDS_HUMAN`.
   6. Save an inbound `messages` row, insert `processed_messages` (unique, so each message is processed
-     once), and journal `"Reply classified INTERESTED (0.93)"`.
+     once), and journal `"Reply classified INTERESTED (0.93)"`. Also record
+     `decision.reply_label` = `{contact_id, label, confidence, action}`, with the classifier's summary as
+     the rationale.
 - **`classify` schema:**
   `{"label": "INTERESTED|MEETING_REQUEST|NOT_INTERESTED|OPT_OUT|LATER|QUESTION|OBJECTION|REFERRAL|OUT_OF_OFFICE|BOUNCE|OTHER|UNCERTAIN", "confidence": 0.0, "proposed_time_text": "str|null", "summary": "str"}`.
   Treat the email text as untrusted data.
@@ -409,7 +608,8 @@ def parse_slot_choice(text: str, n: int = 3) -> int | None   # "2", "option 2", 
 async def handle_slot_reply(contact_id: str, text: str) -> None
 ```
 - **`offer_slots`:**
-  - Get `free_slots` for the next 7 business days and take the first 3 slots, preferring different days.
+  - Get `free_slots` for the next `scheduling.prefs.days_ahead` business days and take the first 3 slots,
+    preferring different days.
   - Create a `meetings` row with `OFFERED` and `slots_offered`.
   - Send the email in the thread (`kind=slot_offer`, key `<cid>:slot_offer:<attempt>`), listing
     `1) Tue 4 Nov, 11:00–11:20 IST` and so on, ending with "Reply with 1, 2 or 3."
@@ -422,7 +622,9 @@ async def handle_slot_reply(contact_id: str, text: str) -> None
   4. Set **`BOOKED` only when both `event_id` and `meet_link` came back.** Otherwise set
      `MEETING_READY_TO_BOOK` with the error.
   5. Save the meeting (start, end, event_id, meet_link, accepted_message_id), set `contact.state`, and
-     journal "Calendar event created, invite sent. Marked BOOKED."
+     journal "Calendar event created, invite sent. Marked BOOKED." Record `decision.slot_booked` =
+     `{contact_id, start, event_id}`, with the rationale "Prospect replied '<choice>'; slot re-checked
+     free".
 - **Tier 2:** if the first reply proposes its own time (`proposed_time_text`), offer that time as option 1
   plus 2 alternatives.
 
@@ -438,10 +640,64 @@ NEEDS_HUMAN → SCHEDULING ("Treat as interested") | SUPPRESSED ("Suppress") | W
 - `HELD` is terminal: nothing ever sends a held draft.
 - Pause blocks every external action: sends, slot offers and bookings.
 
+### 6.13 `app/memory.py`: Seller Memory (P1)
+
+What the agent knows about the seller, and every decision made by the agent or the seller, in one place.
+The seller can see it and edit it, and agents read it at the start of every step.
+
+```python
+def ensure_defaults() -> None
+    # called at app startup; seeds seller-wide keys only if missing
+def get(campaign_id: str | None, key: str, default=None)
+    # active value: the campaign-scoped one first, then seller-wide, then default
+def put(campaign_id: str | None, key: str, value, *, kind: str, source: str, rationale: str = "") -> str
+def record_decision(campaign_id: str, key: str, value, *, source: str, rationale: str) -> str
+    # kind="decision"; always appends; never locked
+def edit(campaign_id: str | None, key: str, value) -> str
+    # a user edit: new active version, source="user", locked=True
+def snapshot(campaign_id: str | None) -> dict
+    # every active item, grouped by kind, plus the decisions newest first; for the UI and export
+def history(campaign_id: str | None, key: str) -> list[dict]   # Tier 2
+def revert(item_id: str) -> str   # Tier 2: copies an old version as a new active one (source="user", locked=True)
+```
+
+**Rules:**
+- **`put` with `source` starting `agent:`:** if the current active item for that key is `locked` (the
+  seller edited it), don't replace it. Store the agent's value as `status="proposed"` and journal "Kept your
+  edit for <key>; the agent's suggestion is saved." Otherwise the old active item becomes `superseded` and
+  the new one becomes `active` with `version + 1`.
+- **Every read is live:** agents call `get` at the start of each step and never cache it across steps. A
+  seller's edit therefore changes the next draft, discovery run, slot offer or reply decision.
+- **Scope:**
+  - Seller-wide items (`campaign_id=None`) are the seller's lasting knowledge: product, GTM and ICP, voice,
+    rules, preferences. They carry over to new campaigns.
+  - Decisions are campaign-scoped.
+  - `/api/demo/reset` deletes the deleted campaigns' campaign-scoped memory and **keeps** seller-wide memory.
+
+**Key registry (frozen; don't invent new keys without updating this table):**
+
+| Key | Kind | Written by | Read by | What a seller edit changes |
+|---|---|---|---|---|
+| `product.profile` | profile | P2 `generate_profile_and_icp` | P2 drafting, claim gate | the product claims allowed in the next drafts |
+| `gtm.icp` | icp | P2 `generate_profile_and_icp` | P2 `run_discovery` | the companies and people found on the next discovery run |
+| `voice.style` | voice | P2 `generate_profile_and_icp` | P2 drafting | tone, length and avoid-list of the next drafts |
+| `outreach.rules` | rule | default `[]`; the seller adds rules | P2 drafting | rules every next draft must follow |
+| `scheduling.prefs` | rule | default `{working_hours:[9,18], slot_minutes:20, buffer_minutes:10, days_ahead:7, timezone:"Asia/Kolkata"}` | P3 `calendar_io`, booking | the next slot offer |
+| `reply.prefs` | rule | default `{interested_min_confidence: 0.75}` | P3 inbox | how sure the agent must be before offering slots |
+| `decision.icp_approved` | decision | P1 route (`source=user`) | UI | shown only |
+| `decision.shortfall_relaxed` | decision | P2 | UI | shown only (the seller can edit `gtm.icp` and re-run) |
+| `decision.featured_contact` | decision | P2 (agent default), P1 route (seller star) | UI, send route | the star moves |
+| `decision.send_approved` | decision | P1 send route (`source=user`) | UI | shown only |
+| `decision.reply_label` | decision | P3 inbox | UI | shown only (correct it with the NEEDS_HUMAN buttons) |
+| `decision.human_action` | decision | P1 human route (`source=user`) | UI | shown only |
+| `decision.slot_booked` | decision | P3 booking | UI | shown only |
+
 ## 7. API routes (P1, `app/main.py`)
 
-- **App startup:** `init_db()`, then start a background task that runs `inbox.inbox_pass()` every 15 s
-  (catch and log errors; never crash).
+- **App startup:** `init_db()`, then `memory.ensure_defaults()`, then start a background task that runs
+  `inbox.inbox_pass()` every 15 s (catch and log errors; never crash).
+- **Every seller action is also a memory decision** (§6.13): approve ICP, star a contact, approve a send,
+  and the NEEDS_HUMAN buttons each call `memory.record_decision(..., source="user")`.
 - **All routes are JSON under `/api`.** Never return `verified_email`; return `"email_verified": true`
   instead.
 
@@ -465,7 +721,13 @@ NEEDS_HUMAN → SCHEDULING ("Treat as interested") | SUPPRESSED ("Suppress") | W
 | POST | `/api/campaigns/{id}/pause` and `/resume` | sets `paused` |
 | GET | `/api/campaigns/{id}/journal` | newest first |
 | GET | `/api/campaigns/{id}/meetings` | meetings (for the booked card) |
-| POST | `/api/demo/reset` | deletes STAND_IN campaigns and all their rows, including suppressions they created. **Never touches LIVE rows** |
+| GET | `/api/memory?campaign_id=` | `memory.snapshot(campaign_id)`: knowledge grouped by kind, plus decisions (each with source, rationale, version, locked, created_at) |
+| PUT | `/api/memory` | body `{campaign_id \| null, key, value}`. Calls `memory.edit` (a seller edit, locked). Validate that `value` is JSON of the same shape as before |
+| POST | `/api/campaigns/{id}/drafts/regenerate` | re-runs `drafting.generate_drafts` for contacts not yet sent. Used after editing `product.profile`, `voice.style` or `outreach.rules` |
+| GET | `/api/memory/history?campaign_id=&key=` | **Tier 2:** all versions of one key |
+| POST | `/api/memory/{item_id}/revert` | **Tier 2:** restore an old version |
+| GET | `/api/memory/export?campaign_id=` | **Tier 2:** the snapshot as a downloadable Markdown file ("Seller Memory: product, GTM, voice, rules, decisions") |
+| POST | `/api/demo/reset` | deletes STAND_IN campaigns and all their rows, including suppressions they created and their campaign-scoped memory. **Keeps seller-wide memory. Never touches LIVE rows** |
 | POST | `/api/campaigns/{id}/consent` | **Tier 2:** LIVE consent record `{sender_name, company, postal_address, max_sends (default 5), end_date, authorized: true}` |
 
 ## 8. The UI (P1, `app/static/index.html`)
@@ -481,8 +743,9 @@ The layout follows `docs/assets/wireframe-campaign.png`.
   - **Pause** button
 - **Setup panel** (shown when the campaign isn't ready yet):
   - product textarea, prefilled with the demo product (§10), and **Create campaign**
-  - **Generate ICP**, which shows the profile and ICP read-only, with machine-checkable versus "not
-    machine-checkable" tags and MANDATORY/PREFERRED. Buttons: **Approve**, **Regenerate**.
+  - **Generate ICP**, which shows the profile and ICP from memory, with machine-checkable versus "not
+    machine-checkable" tags and MANDATORY/PREFERRED. Buttons: **Approve**, **Regenerate**, and **Edit**
+    (opens that item in the Memory panel).
   - **Run discovery**, with a spinner and journal lines streaming in
 - **Left side:**
   1. **Funnel:** Discovered, Qualified ("20 target · N qualified" when short), Contacts ("N w/ verified
@@ -500,6 +763,20 @@ The layout follows `docs/assets/wireframe-campaign.png`.
   - **Agent journal**, newest first, with timestamps, plus a **Check inbox now** button.
   - The **booked card**, pinned on top once BOOKED: date and time in IST, the contact and company, the Meet
     link, "event id ✓", and the reply that accepted.
+- **Memory panel** (a "Memory" tab beside the journal; `GET /api/memory`):
+  - **Product and GTM:** `product.profile` and `gtm.icp`
+  - **Voice and rules:** `voice.style` and `outreach.rules`
+  - **Preferences:** `scheduling.prefs` and `reply.prefs`
+  - **Decisions:** a timeline of every agent and seller decision, each with an **AGENT** or **YOU** badge,
+    its rationale and its time
+
+  Each knowledge item:
+  - shows its value (as a readable list, or formatted JSON), its source, version, and a 🔒 "edited by you"
+    badge when locked
+  - **Edit** opens a JSON textarea; **Save** calls `PUT /api/memory`
+  - after an edit, shows a hint button: **Re-run discovery** for `gtm.icp`, **Regenerate drafts** for
+    product, voice or rules, or "applies to the next slot offer / reply" for preferences
+  - if there's a `proposed` agent version (the seller's edit was kept), shows it under "Agent suggested"
 - **NEEDS_HUMAN rows** show the reply text and three buttons: Treat as interested, Suppress, Dismiss.
 - **`[src]` drawer:** shows endpoint, field path, value, retrieved_at and the raw JSON excerpt, plus the
   source URL if one exists.
@@ -518,6 +795,11 @@ The layout follows `docs/assets/wireframe-campaign.png`.
   - A "2" reply that quotes the slot list parses as 2.
   - A reply that is empty after stripping goes to `NEEDS_HUMAN`.
   - The `parse_slot_choice` variants all parse.
+- **P1 `tests/test_memory.py`:**
+  - An agent `put` does not overwrite a key the seller edited; it's stored as `proposed`.
+  - A campaign-scoped value overrides the seller-wide one.
+  - `record_decision` appends.
+  - `ensure_defaults` doesn't overwrite existing keys.
 - **P2 `tests/test_scoring.py`:** zero evaluable criteria, zero weights, a mandatory FAIL gives `EXCLUDED`,
   and a mandatory UNKNOWN gives `NEEDS_EVIDENCE`.
 - **P2 `tests/test_claim_gate.py`:** an uncited prospect fact is dropped, a draft with no prospect fact left
@@ -545,6 +827,10 @@ spikes."
 5. The stand-in replies "2". Click **Check inbox now**: **BOOKED**, and the invite with the Meet link
    appears on the stand-in's phone (30 s).
 
+**Optional, only if the timer allows (10 s):** open the **Memory** tab: "Everything the agent believes about
+our product and buyers, and every decision it and I made, is here and editable. Change it, and the agents
+change."
+
 **Close with:** "Every claim had a receipt, and the meeting is real."
 
 **Fallbacks:**
@@ -554,48 +840,23 @@ spikes."
 
 ## 11. Tier 2 (only after Tier 1 integration passes) and Tier 3 (not today)
 
+- **Seller Memory is Tier 1:** `memory.py`, the agents reading and writing it, `GET` and `PUT /api/memory`,
+  drafts regenerate, and the Memory panel with JSON edit.
 - **Tier 2:**
-  - P1: the LIVE consent form, the red LIVE badge, and an "Attach to contact" action for Unmatched messages.
+  - P1: memory history, revert and Markdown export. The LIVE consent form, the red LIVE badge, and an
+    "Attach to contact" action for Unmatched messages.
   - P3: the proposed-time path, and the LIVE checks exercised end to end.
   - P2: the honest shortfall label in the funnel.
-- **Tier 3, recorded in `TODOS.md`:** follow-ups and the demo clock, REPLAY of Crustdata responses, ICP
-  editing, URL intake, Meet transcripts and meeting prep, Slack alerts, warm intros and social connections,
+- **Tier 3, recorded in `TODOS.md`:** follow-ups and the demo clock, REPLAY of Crustdata responses, a
+  structured form editor for the ICP (JSON editing ships in Tier 1), URL intake, Meet transcripts and meeting prep, Slack alerts, warm intros and social connections,
   and a backtest on past data.
 
-## 12. Kickoff prompts (paste into your own Claude Code after `git pull`)
+## 12. How to start
 
-**P1 (Rithvik):**
+There are no separate kickoff prompts. Each person opens Claude Code in the repo and types one line:
+
 ```text
-You are P1 on team Kingslayers. Read PLAN.md fully; it is the contract and wins over every other doc.
-You own: app/__init__.py, app/config.py, app/db.py, app/models.py, app/journal.py, app/main.py,
-app/static/index.html, requirements.txt, .env.example, README.md. Edit nothing else.
-First (by 14:15): commit requirements.txt and the skeleton (config, db, models exactly per §5, journal,
-main with / and /api/health) and push. Then build every route in §7, the background inbox loop, and the
-UI in §8 against the contracts in §6 (stub calls locally until P2/P3 push; don't commit stubs).
-Push every 10 minutes with git pull --rebase. Don't add features not in PLAN.md.
+@PLAN.md I am P1
 ```
 
-**P2 (discovery):**
-```text
-You are P2 on team Kingslayers. Read PLAN.md fully; it is the contract and wins over every other doc.
-You own: app/llm.py, app/crustdata.py, app/scoring.py, app/discovery.py, app/drafting.py,
-scripts/smoke_crustdata.py, tests/test_scoring.py, tests/test_claim_gate.py, docs/notes/crustdata-rest.md.
-Edit nothing else. First (by 14:15): verify Crustdata request/response field names from
-https://docs.crustdata.com plus one tiny real call per endpoint, record them in docs/notes/crustdata-rest.md,
-note the real business-email status values, and push. Never guess a field name. Then build §6.1-§6.5 and
-the P2 tests. Use DISCOVERY_COMPANY_LIMIT=5 while developing. Push every 10 minutes with git pull --rebase.
-Don't add features not in PLAN.md.
-```
-
-**P3 (conversation):**
-```text
-You are P3 on team Kingslayers. Read PLAN.md fully; it is the contract and wins over every other doc.
-You own: app/gates.py, app/mail.py, app/calendar_io.py, app/outreach.py, app/inbox.py, app/booking.py,
-scripts/smoke_composio.py, tests/test_guard.py, tests/test_inbox.py, docs/notes/composio-tools.md.
-Edit nothing else. First (by 14:15): with the Composio SDK, verify tool slugs and argument names, send one
-email to STAND_IN_EMAIL, read the thread back, query free slots, and create one calendar event with a Meet
-link for STAND_IN_EMAIL. If no Meet link comes back, apply the GOOGLEMEET_CREATE_MEET fallback in §6.8.
-Record findings in docs/notes/composio-tools.md and push. Then build §6.6-§6.11 and the P3 tests; the
-recipient guard is the safety core and fails closed. Push every 10 minutes with git pull --rebase.
-Don't add features not in PLAN.md.
-```
+(or `I am P2`, or `I am P3`). Their Claude follows START HERE, then the matching role card, top to bottom.
