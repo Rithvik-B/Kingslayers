@@ -296,13 +296,15 @@ async function refresh() {
     ]);
     companiesData = cos;
     render(); renderJournal(jr); renderBooked(mt);
-    if (currentTab === 'memory' && $('memOverlay').classList.contains('hidden')) loadMemory();
     if (openDraftContact) loadDraft(openDraftContact, true);
   } catch (e) { showErr(e); }
 }
 
+let lastRenderKey = '';
 function render() {
   const c = campaign;
+  const key = JSON.stringify([c && c.status, c && c.paused, c && c.icp_approved, c && c.funnel, companiesData && companiesData.ranked.map(x => [x.id, x.tier, x.contacts.map(k => [k.state, k.featured])])]);
+  const unchanged = key === lastRenderKey; lastRenderKey = key;
   const inSetup = !c || ['DRAFT', 'FAILED'].includes(c.status) || (c.status === 'DISCOVERING' && !(c.funnel && c.funnel.discovered));
   $('setup').classList.toggle('hidden', !inSetup);
   $('main').classList.toggle('hidden', inSetup);
@@ -331,13 +333,13 @@ function render() {
     ['Replied', f.replied, ''],
     ['Booked', f.booked, f.booked ? 'calendar event + Meet' : ''],
   ];
-  $('funnel').innerHTML = cells.map(([l, v, sub], i) => `
+  if (!unchanged) $('funnel').innerHTML = cells.map(([l, v, sub], i) => `
     <div class="card p-3.5 ${i === 5 && v ? 'ring-1' : ''}" style="${i === 5 && v ? 'border-color:var(--ok);box-shadow:0 0 0 1px var(--ok) inset' : ''}">
       <div class="num ${i === 5 && v ? '' : ''}" style="${i === 5 && v ? 'color:var(--ok)' : ''}">${v}</div>
       <div class="text-[11.5px] font-semibold mt-1.5">${l}</div>
       <div class="text-[10.5px] dim truncate">${esc(sub)}&nbsp;</div>
     </div>`).join('');
-  renderTable();
+  if (!unchanged) { renderTable(); }
   renderHint();
 }
 
@@ -605,7 +607,17 @@ async function loadMemory(target) {
 async function regen() { try { await api('POST', `/api/campaigns/${campaignId}/drafts/regenerate`); await refresh(); } catch (e) { showErr(e); } }
 
 // ---------- boot ----------
-(async () => { try { await loadCampaignList(); } catch (e) { showErr(e); } await refresh(); setInterval(refresh, 3000); })();
+function uiBusy() {
+  const openOverlay = ['memOverlay', 'company', 'drawer'].some(id => !$(id).classList.contains('hidden'));
+  const editing = !!document.querySelector('.editBox:not(.hidden)');
+  const typing = document.activeElement && ['TEXTAREA', 'INPUT', 'SELECT'].includes(document.activeElement.tagName);
+  return openOverlay || editing || typing;
+}
+(async () => {
+  try { await loadCampaignList(); } catch (e) { showErr(e); }
+  await refresh();
+  setInterval(() => { if (!uiBusy()) refresh(); }, 3000);
+})();
 </script>
 </body>
 </html>
