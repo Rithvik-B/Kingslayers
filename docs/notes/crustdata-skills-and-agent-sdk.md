@@ -68,8 +68,32 @@ Credit costs mentioned in the skills: `person_enrich` 1, `company_enrich` 2 per 
     `ANTHROPIC_BASE_URL=https://api.aimlapi.com`, plus the right auth variable and model ID.
   - **Fallback:** a direct Anthropic API key for the Agent SDK, and AIML only for simple one-shot LLM calls.
 
+## Running the Agent SDK on a Claude Max subscription instead of an API key (checked 2026-10-31)
+
+- **Allowed:** ordinary, individual use. Claude Code's legal page says plan limits "assume ordinary,
+  individual usage of Claude Code and the Agent SDK". The Help Center says Agent SDK and `claude -p` usage
+  draw from the subscription's limits. The separate monthly Agent SDK credit announced for June 15 is
+  **paused**.
+- **Not allowed:** a product that other people use. The terms say developers "should use API key
+  authentication", and Anthropic does not permit "route requests through Free, Pro, Max, or Ultra plan
+  credentials on behalf of their users", nor offering Claude.ai login inside our app.
+- **What this means for us:**
+  - Building with Claude Code on Max is fine.
+  - Running the backend on our own laptop, logged in as ourselves, for development and our own demo counts
+    as individual use.
+  - Once anyone else uses the app, it needs a Console API key.
+  - Don't put a personal subscription token on a shared cloud server.
+- **Practical points:**
+  - The backend's agent runs share one quota with that person's interactive Claude Code use. If the 5-hour
+    limit runs out mid-demo, the agent stops. Run research ahead of time and keep a backup API key.
+  - If `ANTHROPIC_API_KEY` is set in the environment, it takes priority and is billed to the API instead.
+- **This policy has changed several times in 2026.** Re-check the two pages below before the event.
+
 ## Sources
 
+- https://code.claude.com/docs/en/legal-and-compliance (authentication and credential use)
+- https://code.claude.com/docs/en/agent-sdk/overview (note on claude.ai login)
+- https://support.claude.com/en/articles/15036540 (Agent SDK with your Claude plan)
 - https://docs.crustdata.com/for-agents/mcp
 - https://docs.aimlapi.com/api-references/text-models-llm/anthropic
 - https://docs.crustdata.com/integrations/claude-plugin
