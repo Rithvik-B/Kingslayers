@@ -91,8 +91,9 @@ def _consent(max_sends=5):
 
 @pytest.fixture
 def live_on(monkeypatch):
-    monkeypatch.setattr(S, "OUTBOUND_ENABLED", True)
-    monkeypatch.setattr(S, "DEMO_MODE", False)
+    # LIVE flags are properties re-read from the environment at call time (app/config.py).
+    monkeypatch.setenv("OUTBOUND_ENABLED", "true")
+    monkeypatch.setenv("DEMO_MODE", "false")
 
 
 def test_stand_in_rejects_real_address(tdb):
@@ -125,7 +126,7 @@ def test_outbound_disabled_blocks_consented_live(tdb, live_on, monkeypatch):
     camp = load(tdb, "Campaign", make_campaign(tdb, mode="LIVE", consent=_consent()))
     c = load(tdb, "Contact", make_contact(tdb, camp.id))
     check_recipient(camp, c, "prospect@realco.in", initial=True)  # allowed while enabled
-    monkeypatch.setattr(S, "OUTBOUND_ENABLED", False)
+    monkeypatch.setenv("OUTBOUND_ENABLED", "false")
     with pytest.raises(RecipientGuardError):
         check_recipient(camp, c, "prospect@realco.in", initial=True)
 
@@ -135,7 +136,7 @@ def test_live_demo_mode_and_wrong_recipient_block(tdb, live_on, monkeypatch):
     c = load(tdb, "Contact", make_contact(tdb, camp.id))
     with pytest.raises(RecipientGuardError):
         check_recipient(camp, c, "someone.else@realco.in", initial=True)
-    monkeypatch.setattr(S, "DEMO_MODE", True)
+    monkeypatch.setenv("DEMO_MODE", "true")
     with pytest.raises(RecipientGuardError):
         check_recipient(camp, c, "prospect@realco.in", initial=True)
 
