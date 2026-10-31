@@ -82,11 +82,14 @@ def _compare(field: str, operator: str, expected: Any, observed: Any) -> str:
 
     if field == "country":
         exp = {_norm_country(x) for x in _as_list(expected)}
-        return "PASS" if _norm_country(observed) in exp else "FAIL"
+        hit = _norm_country(observed) in exp
+        return ("FAIL" if hit else "PASS") if op == "not_in" else ("PASS" if hit else "FAIL")
 
     if field == "industry":
         exp = {_norm(x) for x in _as_list(expected)}
         obs = {_norm(x) for x in _as_list(observed)}
+        if op == "not_in":
+            return "FAIL" if obs & exp else "PASS"
         return "PASS" if obs & exp else "FAIL"
 
     # numeric fields: headcount, headcount_growth_12m, open_roles
@@ -106,6 +109,8 @@ def _compare(field: str, operator: str, expected: Any, observed: Any) -> str:
         return "PASS" if e is None or o >= e else "FAIL"
     if op == "in":
         return "PASS" if o in {_num(x) for x in _as_list(expected)} else "FAIL"
+    if op == "not_in":
+        return "FAIL" if o in {_num(x) for x in _as_list(expected)} else "PASS"
     # eq
     e = _num(expected if not isinstance(expected, (list, tuple)) else expected[0])
     return "PASS" if e is not None and o == e else "FAIL"

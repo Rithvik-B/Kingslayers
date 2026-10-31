@@ -38,7 +38,7 @@ CONSTRAINT_SCHEMA = {
         "id": _STR,
         "field": {"type": "string", "enum": ["country", "headcount", "industry", "open_roles", "headcount_growth_12m", "other"]},
         "type": {"type": "string", "enum": ["MANDATORY", "PREFERRED"]},
-        "operator": {"type": "string", "enum": ["eq", "in", "between", "gte"]},
+        "operator": {"type": "string", "enum": ["eq", "in", "not_in", "between", "gte"]},
         "expected": _EXPECTED,
         "weight": {"type": "number"},
         "importance": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
@@ -84,20 +84,38 @@ company database. Output only JSON matching the schema.
 Machine-checkable constraint fields (the program can verify these from Crustdata data):
 - country: expected is a full country name such as "India" (operator eq, or in with a list).
 - headcount: operator between with expected [min, max] (max may be null), or gte with a number.
-- industry: operator in with a list of LinkedIn industry names, e.g. "IT Services and IT Consulting",
-  "Staffing and Recruiting", "Software Development", "Financial Services", "Hospitals and Health Care",
-  "Retail", "Manufacturing", "Banking", "Insurance", "Telecommunications", "Pharmaceutical Manufacturing".
-  Matching is exact, so list several plausible names.
+- industry: operator in (wanted) or not_in (excluded) with a list of LinkedIn industry names, e.g.
+  "IT Services and IT Consulting", "Information Technology & Services", "Software Development",
+  "Financial Services", "Banking", "Insurance", "Hospitals and Health Care", "Retail", "Manufacturing",
+  "Telecommunications", "Pharmaceutical Manufacturing", "Transportation, Logistics, Supply Chain and Storage",
+  "Staffing and Recruiting", "Human Resources Services", "Human Resources", "Business Consulting and Services",
+  "Outsourcing and Offshoring Consulting". Matching is exact, so list several plausible names.
 - open_roles: operator gte with a number; counts current job postings whose title matches job_keywords.
 - headcount_growth_12m: operator gte with a percent number (12-month headcount growth).
 Any other criterion uses field "other" and cannot be MANDATORY.
 
-Rules: 2 to 6 constraints. Use MANDATORY only for hard requirements stated or clearly implied by the product
+Rules: 2 to 7 constraints. Use MANDATORY only for hard requirements stated or clearly implied by the product
 (for example the market country and the minimum company size). Weights are 1 to 5. importance low + relaxable
-true marks a preference the program may drop if too few companies qualify. nl_query is a plain-language
-description of the target companies (what they do, where, their situation). person_titles are 4 to 8 job titles
-of the buyer or champion to search for. job_keywords are 2 to 5 words that appear in the titles of the job
-postings that signal the pain the product solves. voice.max_words is 90 to 110. Invent no customers or metrics."""
+true marks a preference the program may drop if too few companies qualify. Keep numeric thresholds modest
+(for example headcount growth gte 5, open_roles gte 1) so that real companies can pass.
+
+nl_query drives a semantic company search, so it must describe what the TARGET companies themselves do and
+look like: their industries, the kind of workforce they employ, their size and market. It is matched against
+company descriptions, so never put the seller's function or the buyer's pain in it: words like hiring,
+recruiting, talent acquisition, HR, sales, marketing, finance or compliance would pull in the vendors and agencies
+that sell those services instead of the companies that buy them. Say who the buyers are, for example "IT services
+firms, BPO operators, retail chains, banks, manufacturers, hospitals and logistics operators with large frontline
+or entry-level workforces". Negations in nl_query are ignored by the search.
+
+When the product is sold to companies that run a business function in-house (recruiting, HR, sales, support,
+finance), add one MANDATORY industry constraint with operator not_in that excludes the agencies, consultancies and
+outsourcers that provide that same function as a service, for example ["Staffing and Recruiting",
+"Human Resources Services", "Human Resources", "Outsourcing and Offshoring Consulting"] for a recruiting
+product. Explain it in the rationale.
+
+person_titles are 4 to 8 job titles of the buyer or champion to search for. job_keywords are 2 to 5 words that
+appear in the titles of the job postings that signal the pain the product solves. voice.max_words is 90 to 110.
+Invent no customers or metrics."""
 
 
 def _normalize_icp(icp: dict) -> tuple[dict, int]:
@@ -190,6 +208,11 @@ def _company_filters(icp: dict) -> dict | None:
                     conds.append(cond("headcount.total", "=<", hi))
             elif op == "gte" and exp not in (None, "any", ""):
                 conds.append(cond("headcount.total", "=>", exp if not isinstance(exp, list) else exp[0]))
+        elif f == "industry" and op in ("in", "not_in") and exp not in (None, "any", "", []):
+            vals = [str(v) for v in (exp if isinstance(exp, list) else [exp]) if v]
+            if vals:
+                # the primary industry; a not_in here is what keeps staffing agencies out of an employer search
+                conds.append(cond("taxonomy.professional_network_industry", op, vals))
     return group("and", conds)
 
 

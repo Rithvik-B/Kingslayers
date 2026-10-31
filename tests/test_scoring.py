@@ -71,6 +71,16 @@ def test_evaluate_industry_exact_match_any():
     assert evaluate(c(field="industry", operator="in", expected=["Banking"]), COMPANY, None)[0] == "FAIL"
 
 
+def test_evaluate_industry_not_in_excludes_agencies():
+    excl = ["Staffing and Recruiting", "Human Resources Services"]
+    v, obs, _ = evaluate(c(field="industry", type="MANDATORY", operator="not_in", expected=excl), COMPANY, None)
+    assert v == "FAIL" and "Staffing and Recruiting" in obs
+    employer = dict(COMPANY, taxonomy={"professional_network_industries": ["IT Services and IT Consulting"]})
+    assert evaluate(c(field="industry", operator="not_in", expected=excl), employer, None)[0] == "PASS"
+    assert evaluate(c(field="country", operator="not_in", expected=["India"]), COMPANY, None)[0] == "FAIL"
+    assert evaluate(c(field="headcount", operator="not_in", expected=[417]), COMPANY, None)[0] == "FAIL"
+
+
 def test_evaluate_open_roles_and_growth():
     v, obs, _ = evaluate(c(field="open_roles", operator="gte", expected=1), COMPANY, JOBS)
     assert (v, obs) == ("PASS", 1)
