@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kingslayers · Sales Agent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .pill{display:inline-block;border:1px solid #cbd5e1;border-radius:999px;padding:1px 8px;font-size:11px;white-space:nowrap}
+  .chip{display:inline-block;border:1px solid #94a3b8;border-radius:999px;padding:0 7px;font-size:11px;margin:1px 2px 1px 0;background:#fff}
+  .src{font-size:10px;border:1px dashed #64748b;border-radius:3px;padding:0 3px;margin-left:3px;cursor:pointer;color:#334155}
+  .src:hover{background:#e2e8f0}
+  .tl li{position:relative;padding-left:14px;margin-bottom:8px}
+  .tl li::before{content:"";position:absolute;left:0;top:6px;width:7px;height:7px;border:1px solid #475569;border-radius:50%;background:#fff}
+  .tag{font-size:10px;padding:0 5px;border-radius:3px;background:#e2e8f0;color:#334155;margin-right:4px}
+  textarea.json{font-family:ui-monospace,monospace;font-size:12px;width:100%;min-height:140px}
+  pre.json{font-size:11px;white-space:pre-wrap;word-break:break-all;background:#f8fafc;border:1px solid #e2e8f0;padding:6px;border-radius:4px;max-height:220px;overflow:auto}
+  .hidden{display:none}
+</style>
+</head>
+<body class="bg-white text-slate-900 text-sm">
+
+<!-- top bar -->
+<div class="flex items-center gap-3 px-5 py-3 border-b border-slate-200 flex-wrap">
+  <div id="title" class="text-lg font-semibold">Kingslayers · Sales Agent</div>
+  <span class="pill font-semibold">LIVE DATA · Crustdata</span>
+  <span id="modeBadge" class="pill bg-amber-100 border-amber-400 text-amber-900">STAND-IN</span>
+  <span id="ranAt" class="pill text-slate-600"></span>
+  <span class="pill text-slate-600">Demo send window: any time</span>
+  <div class="ml-auto flex gap-2">
+    <select id="campaignSelect" class="border border-slate-300 rounded px-2 py-1 text-xs"></select>
+    <button id="newBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold">+ New campaign</button>
+    <button id="pauseBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold">■ Pause campaign</button>
+  </div>
+</div>
+
+<div id="err" class="hidden mx-5 mt-2 text-red-700 bg-red-50 border border-red-300 rounded px-3 py-1 text-xs"></div>
+
+<!-- setup panel -->
+<div id="setup" class="mx-5 my-4 border border-slate-300 rounded p-4 max-w-3xl">
+  <div class="font-semibold mb-2">1 · Product</div>
+  <textarea id="productText" class="w-full border border-slate-300 rounded p-2 text-sm" rows="3">TalentFlow: an AI tool that screens applicants and coordinates recruitment pipelines for medium and large employers in India (200+ employees). Helps talent-acquisition teams cut time-to-hire when hiring volume spikes.</textarea>
+  <div class="flex gap-2 mt-2 items-center">
+    <input id="campaignName" class="border border-slate-300 rounded px-2 py-1 text-sm" value="TalentFlow · India outbound">
+    <button id="createBtn" class="bg-slate-900 text-white rounded px-3 py-1 text-xs font-semibold">Create campaign</button>
+  </div>
+
+  <div id="icpBlock" class="hidden mt-5">
+    <div class="font-semibold mb-2">2 · Profile and ICP <span class="text-slate-500 font-normal">(from Seller Memory)</span></div>
+    <div class="flex gap-2 mb-2">
+      <button id="genIcpBtn" class="bg-slate-900 text-white rounded px-3 py-1 text-xs font-semibold">Generate ICP</button>
+      <button id="approveBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold hidden">Approve</button>
+      <button id="regenBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold hidden">Regenerate</button>
+      <button id="editIcpBtn" class="border border-slate-800 rounded px-3 py-1 text-xs font-semibold hidden">Edit in Memory</button>
+      <span id="icpSpin" class="hidden text-slate-500 text-xs self-center">Thinking…</span>
+    </div>
+    <div id="icpView" class="grid grid-cols-2 gap-4 text-xs"></div>
+  </div>
+
+  <div id="discoverBlock" class="hidden mt-5">
+    <div class="font-semibold mb-2">3 · Discovery</div>
+    <button id="discoverBtn" class="bg-slate-900 text-white rounded px-3 py-1 text-xs font-semibold">Run discovery on live Crustdata</button>
+    <span id="discSpin" class="hidden text-slate-500 text-xs ml-2">Discovering… watch the journal →</span>
+  </div>
+</div>
+
+<!-- main two-column layout -->
+<div id="main" class="hidden grid" style="grid-template-columns: 1fr 380px; min-height: calc(100vh - 60px)">
+  <div class="px-5 py-4 border-r border-slate-200 overflow-auto">
+    <div class="text-xs font-semibold tracking-wide text-slate-600 mb-2">PIPELINE</div>
+    <div id="funnel" class="grid grid-cols-6 gap-2 mb-5"></div>
+
+    <div class="text-xs font-semibold tracking-wide text-slate-600 mb-1">RANKED PROSPECTS <span class="font-normal">(click any [src] to see the Crustdata record)</span></div>
+    <table class="w-full text-xs">
+      <thead class="text-slate-500 text-left border-b border-slate-200">
+        <tr><th class="py-1">#</th><th>Company</th><th>Tier</th><th>Fit</th><th>Coverage</th><th>Why now</th><th>Contact</th><th>Status</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div id="needsEvidence" class="mt-4"></div>
+
+    <div id="draft" class="hidden mt-6 border border-slate-300 rounded p-4"></div>
+  </div>
+
+  <div class="px-4 py-4 overflow-auto">
+    <div class="flex gap-3 text-xs font-semibold tracking-wide text-slate-600 mb-3">
+      <button data-tab="journal" class="tabBtn underline">AGENT JOURNAL</button>
+      <button data-tab="memory" class="tabBtn">MEMORY</button>
+      <button id="checkInboxBtn" class="ml-auto border border-slate-800 rounded px-2 py-0.5 text-slate-900">Check inbox now</button>
+    </div>
+    <div id="booked"></div>
+    <ul id="journal" class="tl text-xs"></ul>
+    <div id="memoryPanel" class="hidden text-xs"></div>
+  </div>
+</div>
+
+<!-- evidence drawer -->
+<div id="drawer" class="hidden fixed top-0 right-0 h-full w-[420px] bg-white border-l border-slate-300 shadow-xl p-4 overflow-auto text-xs">
+  <div class="flex justify-between mb-2"><div class="font-semibold">Receipt · Crustdata record</div><button id="drawerClose" class="text-slate-500">✕</button></div>
+  <div id="drawerBody"></div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let campaignId = localStorage.getItem('campaignId') || null;
+let campaign = null, companiesData = null, currentTab = 'journal', openDraftContact = null;
+
+async function api(method, url, body) {
+  const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const text = await r.text();
+  let data; try { data = JSON.parse(text); } catch { data = text; }
+  if (!r.ok) throw new Error((data && data.detail) || text || r.statusText);
+  return data;
+}
+function showErr(e) { $('err').textContent = String(e.message || e); $('err').classList.remove('hidden'); setTimeout(() => $('err').classList.add('hidden'), 8000); }
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtT = (iso) => iso ? new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) : '';
+const fmtDT = (iso) => iso ? new Date(iso).toLocaleString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }) + ' IST' : '';
+
+// ---------- campaigns ----------
+async function loadCampaignList() {
+  const list = await api('GET', '/api/campaigns');
+  const sel = $('campaignSelect');
+  sel.innerHTML = list.map(c => `<option value="${c.id}">${esc(c.name)} · ${c.status}</option>`).join('');
+  if (!campaignId && list.length) campaignId = list[0].id;
+  if (campaignId) sel.value = campaignId;
+}
+$('campaignSelect').onchange = (e) => { campaignId = e.target.value; localStorage.setItem('campaignId', campaignId); openDraftContact = null; refresh(); };
+$('newBtn').onclick = () => { campaignId = null; localStorage.removeItem('campaignId'); campaign = null; render(); };
+
+$('createBtn').onclick = async () => {
+  try {
+    const c = await api('POST', '/api/campaigns', { name: $('campaignName').value, product_text: $('productText').value, delivery_mode: 'STAND_IN' });
+    campaignId = c.id; localStorage.setItem('campaignId', campaignId);
+    await loadCampaignList(); await refresh();
+  } catch (e) { showErr(e); }
+};
+$('genIcpBtn').onclick = $('regenBtn').onclick = async () => {
+  $('icpSpin').classList.remove('hidden');
+  try { await api('POST', `/api/campaigns/${campaignId}/icp`); await refresh(); } catch (e) { showErr(e); }
+  $('icpSpin').classList.add('hidden');
+};
+$('approveBtn').onclick = async () => { try { await api('POST', `/api/campaigns/${campaignId}/icp/approve`); await refresh(); } catch (e) { showErr(e); } };
+$('editIcpBtn').onclick = () => { setTab('memory'); };
+$('discoverBtn').onclick = async () => {
+  try { await api('POST', `/api/campaigns/${campaignId}/discover`); $('discSpin').classList.remove('hidden'); await refresh(); } catch (e) { showErr(e); }
+};
+$('pauseBtn').onclick = async () => {
+  if (!campaign) return;
+  try { await api('POST', `/api/campaigns/${campaignId}/${campaign.paused ? 'resume' : 'pause'}`); await refresh(); } catch (e) { showErr(e); }
+};
+$('checkInboxBtn').onclick = async () => {
+  $('checkInboxBtn').textContent = 'Checking…';
+  try { const r = await api('POST', '/api/inbox/check'); await refresh(); $('checkInboxBtn').textContent = `Check inbox now (${r.processed} new)`; }
+  catch (e) { showErr(e); $('checkInboxBtn').textContent = 'Check inbox now'; }
+};
+document.querySelectorAll('.tabBtn').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+function setTab(t) {
+  currentTab = t;
+  document.querySelectorAll('.tabBtn').forEach(b => b.classList.toggle('underline', b.dataset.tab === t));
+  $('journal').classList.toggle('hidden', t !== 'journal');
+  $('booked').classList.toggle('hidden', t !== 'journal');
+  $('memoryPanel').classList.toggle('hidden', t !== 'memory');
+  if (t === 'memory') loadMemory();
+}
+
+// ---------- refresh ----------
+async function refresh() {
+  if (!campaignId) { campaign = null; render(); return; }
+  try {
+    campaign = await api('GET', `/api/campaigns/${campaignId}`);
+    const [cos, jr, mt] = await Promise.all([
+      api('GET', `/api/campaigns/${campaignId}/companies`),
+      api('GET', `/api/campaigns/${campaignId}/journal`),
+      api('GET', `/api/campaigns/${campaignId}/meetings`),
+    ]);
+    companiesData = cos;
+    render(); renderJournal(jr); renderBooked(mt);
+    if (currentTab === 'memory') loadMemory();
+    if (openDraftContact) loadDraft(openDraftContact, true);
+  } catch (e) { showErr(e); }
+}
+
+function render() {
+  const c = campaign;
+  $('setup').classList.toggle('hidden', !!(c && c.status !== 'DRAFT' && c.status !== 'DISCOVERING' && c.status !== 'FAILED'));
+  $('main').classList.toggle('hidden', !(c && ['READY', 'RUNNING', 'DONE', 'DISCOVERING'].includes(c.status)));
+  if (!c) { $('icpBlock').classList.add('hidden'); $('discoverBlock').classList.add('hidden'); $('title').textContent = 'Kingslayers · Sales Agent'; return; }
+  $('title').textContent = c.name;
+  $('modeBadge').textContent = c.delivery_mode === 'LIVE' ? 'LIVE: real prospects' : `STAND-IN: sends go to ${c.stand_in_masked}`;
+  $('modeBadge').className = 'pill ' + (c.delivery_mode === 'LIVE' ? 'bg-red-100 border-red-500 text-red-900 font-semibold' : 'bg-amber-100 border-amber-400 text-amber-900');
+  $('ranAt').textContent = c.discovery_ran_at ? `Discovery ran at ${fmtT(c.discovery_ran_at)} on live Crustdata` : 'Discovery not run yet';
+  $('pauseBtn').textContent = c.paused ? '▶ Resume campaign' : '■ Pause campaign';
+  $('icpBlock').classList.remove('hidden');
+  $('discSpin').classList.toggle('hidden', c.status !== 'DISCOVERING');
+  renderIcp();
+  $('discoverBlock').classList.toggle('hidden', !c.icp_approved);
+  const f = c.funnel;
+  const short = f.qualified < f.target && c.discovery_ran_at;
+  $('funnel').innerHTML = [
+    ['Discovered', f.discovered, ''],
+    ['Qualified', f.qualified, short ? `${f.target} target · ${f.qualified} qualified` : `${f.target} target`],
+    ['Contacts', f.contacts, `${f.verified} w/ verified email`],
+    ['Emailed', f.emailed, `Drafted ${f.drafted} (${f.held} held)`],
+    ['Replied', f.replied, ''],
+    ['Booked', f.booked, ''],
+  ].map(([l, n, sub], i) => `<div class="border ${i === 5 ? 'border-slate-900 border-2' : 'border-slate-300'} rounded p-2 text-center"><div class="text-xl font-semibold">${n}</div><div class="text-xs">${l}</div><div class="text-[10px] text-slate-500">${esc(sub)}</div></div>`).join('');
+  renderTable();
+}
+
+async function renderIcp() {
+  if (!campaign) return;
+  try {
+    const m = await api('GET', `/api/memory?campaign_id=${campaignId}`);
+    const find = (k) => Object.values(m.knowledge).flat().find(i => i.key === k);
+    const prof = find('product.profile'), icp = find('gtm.icp');
+    const has = !!(prof && icp);
+    $('approveBtn').classList.toggle('hidden', !has || campaign.icp_approved);
+    $('regenBtn').classList.toggle('hidden', !has);
+    $('editIcpBtn').classList.toggle('hidden', !has);
+    $('genIcpBtn').classList.toggle('hidden', has);
+    if (!has) { $('icpView').innerHTML = ''; return; }
+    const p = prof.value, ic = icp.value;
+    const checkable = ['country', 'headcount', 'industry', 'open_roles', 'headcount_growth_12m'];
+    $('icpView').innerHTML = `
+      <div><div class="font-semibold mb-1">Product profile ${prof.locked ? '🔒' : ''}</div>
+        <div><b>${esc(p.name)}</b> · ${esc(p.category)}</div>
+        <div class="text-slate-700 mt-1">${esc(p.value_proposition)}</div>
+        <div class="mt-1"><span class="tag">capabilities</span>${(p.capabilities || []).map(esc).join(' · ')}</div>
+        <div class="mt-1"><span class="tag">buyers</span>${(p.target_departments || []).map(esc).join(' · ')}</div></div>
+      <div><div class="font-semibold mb-1">ICP ${icp.locked ? '🔒' : ''} ${campaign.icp_approved ? '<span class="pill bg-green-50 border-green-500">approved</span>' : ''}</div>
+        <div class="text-slate-700 italic">“${esc(ic.nl_query)}”</div>
+        <ul class="mt-1">${(ic.constraints || []).map(k => `<li><span class="tag ${k.type === 'MANDATORY' ? 'bg-slate-900 text-white' : ''}">${k.type}</span>${esc(k.field)} ${esc(k.operator)} ${esc(JSON.stringify(k.expected))} <span class="text-slate-500">w${k.weight}</span>${checkable.includes(k.field) ? '' : ' <span class="tag bg-amber-100">not machine-checkable</span>'}</li>`).join('')}</ul>
+        <div class="mt-1"><span class="tag">titles</span>${(ic.person_titles || []).map(esc).join(' · ')}</div></div>`;
+  } catch (e) { /* P2 not pushed yet */ }
+}
+
+function renderTable() {
+  if (!companiesData) return;
+  const rows = companiesData.ranked;
+  $('rows').innerHTML = rows.map((co, i) => {
+    const ct = co.contacts[0];
+    const why = (co.why_now || []).map(w => `<span class="chip">${esc(w.label)}</span><span class="src" data-ev="${w.evidence_id}">src</span>`).join(' ') || '<span class="chip">—</span>';
+    const contact = ct ? `<div class="${ct.featured ? 'font-semibold' : ''}">${ct.featured ? '⭐ ' : ''}<a href="#" class="underline" data-contact="${ct.id}">${esc(ct.name)}</a>, ${esc(ct.title)}</div><div class="text-slate-500">${esc(ct.role)} · ${ct.email_verified ? 'email verified ✓' : 'no email → manual task'}</div>` : '<span class="text-slate-400">no contact</span>';
+    const status = ct ? statusPill(ct) : '';
+    return `<tr class="border-b border-slate-100 align-top">
+      <td class="py-2">${co.rank ?? i + 1}</td>
+      <td><b>${esc(co.name)}</b><div class="text-slate-500">${esc(co.industry || '')} · ${co.headcount ?? '?'} emp · ${esc(co.city || co.country || '')}</div></td>
+      <td>${co.tier}</td><td>${co.fit == null ? '—' : Math.round(co.fit) + '%'}</td><td>${Math.round(co.coverage)}%</td>
+      <td>${why}</td><td>${contact}</td><td>${status}</td></tr>`;
+  }).join('');
+  const ne = companiesData.needs_evidence;
+  $('needsEvidence').innerHTML = ne.length ? `<div class="text-xs font-semibold text-slate-600 mb-1">NEEDS EVIDENCE (mandatory criterion unknown; never contacted)</div>` + ne.map(co => `<span class="chip">${esc(co.name)}</span>`).join(' ') : '';
+  document.querySelectorAll('[data-ev]').forEach(el => el.onclick = () => openEvidence(el.dataset.ev));
+  document.querySelectorAll('[data-contact]').forEach(el => el.onclick = (e) => { e.preventDefault(); loadDraft(el.dataset.contact); });
+}
+function statusPill(ct) {
+  const map = { BOOKED: 'border-slate-900 font-semibold', SUPPRESSED: 'text-slate-500', NEEDS_HUMAN: 'bg-amber-50 border-amber-400', SCHEDULING: 'bg-blue-50', WAITING: '', HELD: 'text-slate-400', UNREACHABLE: 'text-slate-400' };
+  return `<span class="pill ${map[ct.state] || ''}">${ct.state}</span>`;
+}
+
+// ---------- evidence drawer ----------
+async function openEvidence(id) {
+  try {
+    const e = await api('GET', `/api/evidence/${id}`);
+    $('drawerBody').innerHTML = `<div><b>Endpoint</b> ${esc(e.endpoint)}</div><div><b>Field</b> ${esc(e.field_path)}</div><div><b>Value</b> ${esc(e.value)}</div>
+      ${e.source_url ? `<div><b>Source</b> <a class="underline" target="_blank" href="${esc(e.source_url)}">${esc(e.source_url)}</a></div>` : ''}
+      <div><b>Retrieved</b> ${fmtDT(e.retrieved_at)}</div><div class="mt-2 font-semibold">Raw record</div><pre class="json">${esc(JSON.stringify(e.raw_excerpt, null, 2))}</pre>`;
+    $('drawer').classList.remove('hidden');
+  } catch (e) { showErr(e); }
+}
+$('drawerClose').onclick = () => $('drawer').classList.add('hidden');
+
+// ---------- draft panel ----------
+async function loadDraft(contactId, silent) {
+  openDraftContact = contactId;
+  try {
+    const d = await api('GET', `/api/contacts/${contactId}/draft`);
+    const ct = d.contact;
+    const canSend = ct.featured && d.gate_status === 'PASS' && d.status === 'DRAFT';
+    const sent = d.status === 'SENT';
+    $('draft').innerHTML = `
+      <div class="flex items-center gap-2 mb-2"><div class="font-semibold">Draft · ${esc(ct.name)}</div>
+        <span class="pill ${d.gate_status === 'PASS' ? 'bg-green-50 border-green-500' : 'bg-amber-50 border-amber-400'}">gate: ${d.gate_status || '?'}</span>
+        <span class="pill">${d.status}</span>
+        ${!ct.featured && !sent ? `<button id="starBtn" class="pill border-slate-800">☆ make featured</button>` : ''}
+        <button id="sendBtn" class="ml-auto bg-slate-900 text-white rounded px-3 py-1 text-xs font-semibold" ${canSend ? '' : 'disabled style="opacity:.4"'}>${sent ? 'Sent ✓' : 'Send'}</button>
+        <button id="draftClose" class="text-slate-500">✕</button></div>
+      <div class="mb-2"><b>Subject:</b> ${esc(d.subject)}</div>
+      <ol class="text-xs">${d.sentences.map(s => `<li class="mb-1"><span class="tag">${s.type}</span>${esc(s.text)}
+        ${(s.cited || []).map(c => `<span class="text-slate-500">← ${esc(c.field_path)}: ${esc(c.value)}</span><span class="src" data-ev="${c.evidence_id}">src</span>`).join(' ')}
+        ${s.profile_value != null ? `<span class="text-slate-500">← profile.${esc(s.profile_field)}: ${esc(JSON.stringify(s.profile_value))}</span>` : ''}</li>`).join('')}</ol>
+      ${d.gate_notes.length ? `<div class="text-amber-800 text-xs mt-1">${d.gate_notes.map(esc).join('<br>')}</div>` : ''}
+      <details class="mt-2 text-xs"><summary class="cursor-pointer text-slate-500">Full body as sent</summary><pre class="whitespace-pre-wrap">${esc(d.body)}</pre></details>`;
+    $('draft').classList.remove('hidden');
+    $('draft').querySelectorAll('[data-ev]').forEach(el => el.onclick = () => openEvidence(el.dataset.ev));
+    $('draftClose').onclick = () => { $('draft').classList.add('hidden'); openDraftContact = null; };
+    const star = $('starBtn'); if (star) star.onclick = async () => { try { await api('POST', `/api/contacts/${contactId}/feature`); await refresh(); } catch (e) { showErr(e); } };
+    $('sendBtn').onclick = async () => {
+      $('sendBtn').textContent = 'Sending…';
+      try { await api('POST', `/api/contacts/${contactId}/send`); await refresh(); } catch (e) { showErr(e); $('sendBtn').textContent = 'Send'; }
+    };
+  } catch (e) { if (!silent) showErr(e); }
+}
+
+// ---------- journal, booked card, NEEDS_HUMAN ----------
+function renderJournal(items) {
+  const humans = (companiesData ? companiesData.ranked.flatMap(c => c.contacts) : []).filter(c => c.state === 'NEEDS_HUMAN');
+  const humanHtml = humans.map(c => `<li class="border border-amber-400 bg-amber-50 rounded p-2 mb-2" style="padding-left:8px"><div class="font-semibold">Needs you: ${esc(c.name)}</div>
+      <div class="flex gap-1 mt-1">${['treat_interested', 'suppress', 'dismiss'].map(a => `<button class="pill border-slate-800" data-h="${a}" data-c="${c.id}">${{ treat_interested: 'Treat as interested', suppress: 'Suppress', dismiss: 'Dismiss' }[a]}</button>`).join('')}</div></li>`).join('');
+  $('journal').innerHTML = humanHtml + items.map(j => `<li><div class="text-[10px] text-slate-500">${fmtT(j.at)}</div><div>${esc(j.text)}</div></li>`).join('');
+  $('journal').querySelectorAll('[data-h]').forEach(b => b.onclick = async () => { try { await api('POST', `/api/contacts/${b.dataset.c}/human/${b.dataset.h}`); await refresh(); } catch (e) { showErr(e); } });
+}
+function renderBooked(meetings) {
+  const m = meetings.find(x => x.status === 'BOOKED');
+  if (!m) { $('booked').innerHTML = meetings.length ? `<div class="border border-slate-300 rounded p-2 mb-3 text-xs">Slots offered to ${esc(m0name(meetings[0]))}: ${(meetings[0].slots_offered || []).map(fmtDT).map(esc).join(' · ')}${meetings[0].status === 'MEETING_READY_TO_BOOK' ? `<div class="text-amber-800">Ready to book (calendar failed): ${esc(meetings[0].error || '')}</div>` : ''}</div>` : ''; return; }
+  $('booked').innerHTML = `<div class="border-2 border-slate-900 rounded p-3 mb-3 text-xs">
+    <div class="font-semibold text-sm">✓ Meeting booked</div>
+    <div>${fmtDT(m.start_at)} – ${fmtT(m.end_at)}</div>
+    <div>${esc(m.contact ? m.contact.name : '')} · ${esc(m.company_name || '')}</div>
+    <div><a class="underline" target="_blank" href="${esc(m.meet_link)}">${esc(m.meet_link)}</a></div>
+    <div class="text-slate-500">Accepted in reply: “${esc((m.accepted_text || '').slice(0, 60))}” · event id ✓</div></div>`;
+}
+const m0name = (m) => m.contact ? m.contact.name : '';
+
+// ---------- memory panel ----------
+async function loadMemory() {
+  try {
+    const m = await api('GET', `/api/memory?campaign_id=${campaignId || ''}`);
+    const groups = [['Product and GTM', ['product.profile', 'gtm.icp']], ['Voice and rules', ['voice.style', 'outreach.rules']], ['Preferences', ['scheduling.prefs', 'reply.prefs']]];
+    const all = Object.values(m.knowledge).flat();
+    const hint = { 'gtm.icp': ['Re-run discovery', () => $('discoverBtn').click()], 'product.profile': ['Regenerate drafts', regen], 'voice.style': ['Regenerate drafts', regen], 'outreach.rules': ['Regenerate drafts', regen] };
+    let html = '';
+    for (const [title, keys] of groups) {
+      html += `<div class="font-semibold text-slate-700 mt-2 mb-1">${title}</div>`;
+      for (const k of keys) {
+        const it = all.find(i => i.key === k);
+        const prop = m.proposed[k];
+        html += `<div class="border border-slate-200 rounded p-2 mb-2" data-key="${k}">
+          <div class="flex items-center gap-2"><b>${k}</b>${it ? `<span class="text-slate-500">v${it.version} · ${esc(it.source)}</span>${it.locked ? '<span class="pill bg-slate-100">🔒 edited by you</span>' : ''}` : '<span class="text-slate-400">not set yet</span>'}
+            <button class="ml-auto pill border-slate-800 editBtn">Edit</button></div>
+          ${it && it.rationale ? `<div class="text-slate-500 italic">${esc(it.rationale)}</div>` : ''}
+          <pre class="json viewVal">${esc(JSON.stringify(it ? it.value : null, null, 2))}</pre>
+          <div class="editBox hidden"><textarea class="json">${esc(JSON.stringify(it ? it.value : (k === 'outreach.rules' ? [] : {}), null, 2))}</textarea>
+            <div class="flex gap-2 mt-1"><button class="pill bg-slate-900 text-white saveBtn">Save</button><button class="pill cancelBtn">Cancel</button>
+            ${hint[k] ? `<button class="pill border-slate-800 hintBtn ml-auto">${hint[k][0]}</button>` : '<span class="text-slate-500 self-center ml-auto">applies to the next slot offer / reply</span>'}</div></div>
+          ${prop ? `<details class="mt-1"><summary class="text-slate-500 cursor-pointer">Agent suggested (v${prop.version}, kept your edit)</summary><pre class="json">${esc(JSON.stringify(prop.value, null, 2))}</pre></details>` : ''}
+        </div>`;
+      }
+    }
+    html += `<div class="font-semibold text-slate-700 mt-3 mb-1">Decisions <span class="font-normal text-slate-500">(agent and you)</span></div><ul class="tl">` +
+      m.decisions.map(d => `<li><div class="text-[10px] text-slate-500">${fmtT(d.created_at)} <span class="tag ${d.source === 'user' ? 'bg-slate-900 text-white' : ''}">${d.source === 'user' ? 'YOU' : 'AGENT'}</span>${esc(d.key.replace('decision.', ''))}</div>
+        <div>${esc(d.rationale || '')}</div><div class="text-slate-500">${esc(JSON.stringify(d.value))}</div></li>`).join('') + '</ul>' +
+      `<a class="underline text-slate-500" href="/api/memory/export?campaign_id=${campaignId || ''}" target="_blank">Export as Markdown</a>`;
+    $('memoryPanel').innerHTML = html;
+    $('memoryPanel').querySelectorAll('[data-key]').forEach(box => {
+      const k = box.dataset.key;
+      box.querySelector('.editBtn').onclick = () => box.querySelector('.editBox').classList.toggle('hidden');
+      box.querySelector('.cancelBtn').onclick = () => box.querySelector('.editBox').classList.add('hidden');
+      box.querySelector('.saveBtn').onclick = async () => {
+        try { const value = JSON.parse(box.querySelector('textarea').value); await api('PUT', '/api/memory', { campaign_id: null, key: k, value }); await loadMemory(); await renderIcp(); }
+        catch (e) { showErr(e); }
+      };
+      const hb = box.querySelector('.hintBtn'); if (hb) hb.onclick = hint[k][1];
+    });
+  } catch (e) { showErr(e); }
+}
+async function regen() { try { await api('POST', `/api/campaigns/${campaignId}/drafts/regenerate`); await refresh(); } catch (e) { showErr(e); } }
+
+// ---------- boot ----------
+(async () => { try { await loadCampaignList(); } catch (e) { showErr(e); } await refresh(); setInterval(refresh, 3000); })();
+</script>
+</body>
+</html>

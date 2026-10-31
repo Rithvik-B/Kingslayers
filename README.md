@@ -20,6 +20,16 @@ replies, and books a real Google Calendar meeting with a Meet link.
 `.venv/bin/uvicorn app.main:app --port 8000`, then open http://localhost:8000. Tests:
 `.venv/bin/pytest -q`.
 
+The UI walks through: create a campaign → Generate ICP (saved to Seller Memory; Approve, Regenerate or Edit)
+→ Run discovery on live Crustdata → ranked prospects with `[src]` receipts → open the ⭐ featured draft →
+Send (goes to the stand-in inbox) → Check inbox now → slots offered → BOOKED with a Meet link. The
+**Memory** tab shows and edits everything the agent believes and decided.
+
+## What works (updated during integration)
+
+- P1 foundation: models, Seller Memory with tests, every API route, one-page UI.
+- P2 and P3: see their notes in `docs/notes/` once pushed.
+
 ## How we work
 
 | When | Do |

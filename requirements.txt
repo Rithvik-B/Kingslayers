@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+httpx
+sqlalchemy>=2
+pydantic>=2
+python-dotenv
+composio
+claude-agent-sdk
+anthropic
+pytest
+pytest-asyncio
