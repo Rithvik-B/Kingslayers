@@ -1,6 +1,6 @@
 # Status board
 
-_Last updated: 2026-10-31 by Rithvik (repo setup)_
+_Last updated: 2026-10-31 by Rithvik (decision: the demo's LLM runs on Claude Max)_
 
 ## Phase
 
@@ -28,6 +28,8 @@ _Last updated: 2026-10-31 by Rithvik (repo setup)_
 - [ ] Shortlist ideas, score them with the rubric, pick one, record it with `/decide`
 - [ ] Decide the stack and who owns which part (`/decide`)
 - [ ] Look into what the Crustdata APIs return for the chosen idea, and write notes in `docs/notes/`
+- [ ] Get a backup Anthropic API key for demo day. The demo runs on Rithvik's Max plan (see
+      `docs/decisions/`).
 
 ## Open questions
 
