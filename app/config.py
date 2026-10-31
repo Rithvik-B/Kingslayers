@@ -38,7 +38,7 @@ class Settings:
     DISCOVERY_COMPANY_LIMIT: int = int(os.getenv("DISCOVERY_COMPANY_LIMIT", "5"))
     CONTACTS_PER_COMPANY: int = int(os.getenv("CONTACTS_PER_COMPANY", "1"))
     CREDIT_CEILING_PER_RUN: float = float(os.getenv("CREDIT_CEILING_PER_RUN", "150"))
-    ACCEPTED_EMAIL_STATUSES: list[str] = _list("ACCEPTED_EMAIL_STATUSES", "verified,valid")
+    ACCEPTED_EMAIL_STATUSES: list[str] = _list("ACCEPTED_EMAIL_STATUSES", "deliverable")
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///data/app.db")
 
     @property

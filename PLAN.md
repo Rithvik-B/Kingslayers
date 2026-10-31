@@ -238,7 +238,7 @@ TIMEZONE=Asia/Kolkata
 DISCOVERY_COMPANY_LIMIT=5    # 5 while developing, to save credits; set 20 for the demo pre-run
 CONTACTS_PER_COMPANY=1
 CREDIT_CEILING_PER_RUN=150
-ACCEPTED_EMAIL_STATUSES=verified,valid   # P2 confirms the real values in its smoke test
+ACCEPTED_EMAIL_STATUSES=deliverable   # real Crustdata values: deliverable | catch_all | invalid | unknown (docs/notes/crustdata-rest.md)
 ```
 
 ## 3. Repo layout and ownership (only the owner edits a file)
