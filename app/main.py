@@ -457,13 +457,12 @@ async def human_action(contact_id: str, action: str):
     with session() as db:
         ct = _contact_or_404(db, contact_id)
         cid = ct.campaign_id
-        if action == "suppress":
-            key = ct.verified_email.lower().strip() if ct.verified_email else f"contact:{ct.id}"
-            db.add(Suppression(contact_key=key, reason="seller clicked Suppress",
-                               source_campaign_id=cid, source_mode="STAND_IN"))
-            ct.state = "SUPPRESSED"
-        elif action == "dismiss":
+        if action == "dismiss":
             ct.state = "WAITING"
+    if action == "suppress":
+        from app import inbox  # P3: suppresses by the logical key and records the campaign's real mode
+
+        inbox.suppress_contact(contact_id, "seller clicked Suppress")
     memory.record_decision(cid, "decision.human_action", {"contact_id": contact_id, "action": action},
                            source="user", rationale="Seller resolved a NEEDS_HUMAN reply")
     journal.log(cid, "human", f"Seller chose '{action}'.", contact_id=contact_id)
